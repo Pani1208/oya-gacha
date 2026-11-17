@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>親ガチャ ～魂の待合室～</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=M+PLUS+1p:wght@400;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--txt:#2b2540;--sub:#6d6488;--card:#ffffffd9;--line:#d9d0f0;--acc:#7a5cff}
+*{box-sizing:border-box}
+body{margin:0;color:var(--txt);font-family:"M PLUS 1p",system-ui,sans-serif;-webkit-tap-highlight-color:transparent;min-height:100vh;
+  background:
+   radial-gradient(ellipse 60% 18% at 15% 92%,#fff 0 60%,transparent 61%),
+   radial-gradient(ellipse 50% 15% at 85% 96%,#fff 0 60%,transparent 61%),
+   radial-gradient(ellipse 40% 10% at 50% 99%,#fff 0 60%,transparent 61%),
+   linear-gradient(180deg,#a9d6ff 0%,#d9ecff 45%,#ffe3f1 100%) fixed}
+.wrap{max-width:520px;margin:0 auto;padding:14px 14px 40px}
+header .top{display:flex;align-items:center;justify-content:space-between}
+h1{font-family:"Dela Gothic One",sans-serif;font-weight:400;font-size:30px;margin:2px 0 0;color:#4b3aa8;text-shadow:0 2px 0 #fff}
+h1 small{font-family:"M PLUS 1p";font-weight:800;font-size:13px;color:var(--sub);display:block;text-shadow:none;margin-top:-2px}
+.sub{display:flex;justify-content:flex-end;color:var(--sub);font-size:13px;margin:4px 0 10px}
+.sub b{color:var(--txt)}
+button{font-family:inherit;cursor:pointer;border:none;color:inherit}
+#snd{background:#fff;border:1px solid var(--line);border-radius:999px;padding:6px 12px;font-size:13px}
+.tabs{display:flex;gap:6px;background:#ffffff99;padding:4px;border-radius:12px;backdrop-filter:blur(4px)}
+.tabs button{flex:1;background:none;padding:9px 0;border-radius:9px;font-weight:700;color:var(--sub)}
+.tabs button.on{background:#fff;color:var(--txt);box-shadow:0 2px 6px #0001}
+.tab{display:none;padding-top:14px}.tab.on{display:block}
+.screen{display:none}.screen.on{display:block;animation:fade .4s ease}
+@keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1}}
+
+/* 神様 */
+.god{display:flex;gap:10px;align-items:flex-end;margin:6px 0 14px}
+.god svg{flex:0 0 78px;filter:drop-shadow(0 4px 6px #0002);animation:float 3s ease-in-out infinite}
+@keyframes float{50%{transform:translateY(-5px)}}
+.bubble{position:relative;background:#fff;border-radius:16px;padding:12px 14px;font-weight:700;font-size:15px;line-height:1.5;box-shadow:0 4px 12px #0001;flex:1;min-height:52px}
+.bubble:before{content:"";position:absolute;left:-8px;bottom:16px;border:8px solid transparent;border-right-color:#fff;border-left:0}
+.bubble small{display:block;color:var(--sub);font-size:11px;font-weight:700;margin-bottom:2px}
+
+.big{width:100%;background:linear-gradient(180deg,#9b85ff,#6a4ff0);color:#fff;font-family:"Dela Gothic One",sans-serif;font-size:22px;padding:15px 0;border-radius:16px;box-shadow:0 5px 0 #4330a8}
+.big:active{transform:translateY(3px);box-shadow:none}
+.big:disabled{opacity:.5}
+.sec{width:100%;background:#fff;border:1px solid var(--line);border-radius:12px;font-weight:700;padding:11px 0;margin-top:8px}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.panel{background:var(--card);border:1px solid #fff;border-radius:16px;padding:14px;box-shadow:0 6px 18px #4b3aa81a}
+h2{font-size:14px;margin:20px 0 8px;color:var(--sub)}
+.legend{display:flex;gap:5px;flex-wrap:wrap;justify-content:center;margin:12px 0 0}
+.note{font-size:12px;color:var(--sub);text-align:center;margin:8px 0 0;line-height:1.6}
+
+/* ランク・タグ */
+.rk{display:inline-block;text-align:center;font-family:"Dela Gothic One",sans-serif;font-size:12px;padding:3px 8px;border-radius:6px;line-height:1.3;white-space:nowrap}
+.r-god{background:linear-gradient(90deg,#ff5f6d,#ffc371,#47e891,#3fa9f5,#b56bff,#ff5f6d);background-size:300% 100%;animation:rb 2.5s linear infinite;color:#fff;text-shadow:0 1px 2px #0008}
+.r-da{background:linear-gradient(135deg,#ffe597,#d29a2c);color:#3a2600}
+.r-a{background:#ef6a3a;color:#fff}
+.r-n{background:#9a90a8;color:#fff}
+.r-h{background:#3f74c9;color:#fff}
+.r-dh{background:#6d3fc0;color:#fff}
+.r-leg{background:#0b0b0b;color:#d6b4ff;border:1px solid #b56bff;animation:glow 1.4s ease-in-out infinite;text-shadow:0 0 6px #b56bff}
+@keyframes rb{to{background-position:300% 0}}
+@keyframes glow{50%{box-shadow:0 0 14px #b56bff;color:#fff}}
+.tg{display:inline-block;font-size:11px;font-weight:800;padding:1px 7px;border-radius:99px;white-space:nowrap}
+.t2{background:#d29a2c;color:#2a1a00}.t1{background:#ef6a3a;color:#fff}.t0{background:#9a90a8;color:#fff}.t-1{background:#3f74c9;color:#fff}.t-2{background:#6d3fc0;color:#fff}.t-3{background:#000;color:#ff4d5e;border:1px solid #ff4d5e}
+
+/* 家カード */
+.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:6px 0 4px}
+.hc{perspective:800px;aspect-ratio:3/4;cursor:pointer;transition:opacity .5s,transform .5s}
+.hc.gone{opacity:0;transform:scale(.8);pointer-events:none}
+.hc .in{position:relative;width:100%;height:100%;transition:transform .8s cubic-bezier(.3,1.4,.5,1);transform-style:preserve-3d}
+.hc.flip .in{transform:rotateY(180deg)}
+.hc .f,.hc .b{position:absolute;inset:0;border-radius:14px;backface-visibility:hidden;-webkit-backface-visibility:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.hc .b{background:repeating-linear-gradient(45deg,#8c74ff 0 10px,#7a5cff 10px 20px);border:3px solid #fff;box-shadow:0 6px 14px #4b3aa840;color:#fff;font-family:"Dela Gothic One";font-size:34px}
+.hc .b span{font-size:11px;font-family:"M PLUS 1p";font-weight:800;opacity:.85}
+.hc .f{transform:rotateY(180deg);background:#fff;border:3px solid #fff;box-shadow:0 6px 14px #4b3aa840;font-weight:800;font-size:18px}
+.hc .f .house{font-size:34px;margin-bottom:4px}
+.hc.shuffle{animation:shuf .5s ease-in-out 3}
+@keyframes shuf{25%{transform:translateX(-6px) rotate(-3deg)}75%{transform:translateX(6px) rotate(3deg)}}
+.hc.l1 .in{box-shadow:0 0 0 4px #fff,0 0 30px 10px #fff;border-radius:14px}
+.hc.l2 .in{box-shadow:0 0 0 4px #ffd65a,0 0 36px 14px #ffcc33;border-radius:14px}
+.hc.l3 .in{animation:rbglow 1s linear infinite;border-radius:14px}
+@keyframes rbglow{0%{box-shadow:0 0 0 4px #ff5f6d,0 0 40px 16px #ff5f6d}25%{box-shadow:0 0 0 4px #ffc371,0 0 40px 16px #ffc371}50%{box-shadow:0 0 0 4px #47e891,0 0 40px 16px #47e891}75%{box-shadow:0 0 0 4px #3fa9f5,0 0 40px 16px #3fa9f5}100%{box-shadow:0 0 0 4px #b56bff,0 0 40px 16px #b56bff}}
+
+/* 人生 */
+.lifehead{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.lifehead b{font-size:18px}
+.mental{margin-bottom:12px}
+.mental .lbl{display:flex;justify-content:space-between;font-size:12px;font-weight:800;color:var(--sub);margin-bottom:4px}
+.gauge{height:14px;background:#fff;border-radius:99px;overflow:hidden;border:1px solid var(--line)}
+.gauge i{display:block;height:100%;width:60%;transition:width .6s ease,background .6s;background:#47c98a}
+.gauge.shake{animation:shake .4s}
+@keyframes shake{25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+.tl{list-style:none;padding:0;margin:0 0 12px;position:relative}
+.tl:before{content:"";position:absolute;left:30px;top:6px;bottom:6px;width:3px;background:#fff;border-radius:3px}
+.ev{display:grid;grid-template-columns:62px 1fr 44px;gap:8px;align-items:center;margin-bottom:8px;animation:pop .45s cubic-bezier(.3,1.5,.5,1)}
+@keyframes pop{from{opacity:0;transform:scale(.85) translateY(10px)}}
+.ev .age{position:relative;z-index:1;background:#4b3aa8;color:#fff;font-family:"Dela Gothic One";font-size:13px;border-radius:99px;text-align:center;padding:5px 0}
+.ev .box{background:#fff;border-radius:12px;padding:8px 10px;box-shadow:0 3px 8px #0000000d;font-size:14px;font-weight:700;line-height:1.5}
+.ev .box .c{font-size:11px;color:var(--sub);margin-bottom:2px;display:flex;gap:6px;align-items:center}
+.ev .dm{font-weight:800;font-size:14px;text-align:center}
+.ev.end .age{background:linear-gradient(135deg,#ff7ab6,#7a5cff)}
+.plus{color:#1f9d63}.minus{color:#d6334a}.zero{color:#9a90a8}
+.ev.hell .box{background:#120a0a;color:#ffd9dc}
+.ev.hell .box .c{color:#ff8a95}
+.limit{color:#d6334a;font-weight:800;font-size:13px;text-align:center;margin:-4px 0 8px;display:none}
+.limit.on{display:block;animation:pop .4s}
+
+/* 結末 */
+.ending{text-align:center}
+.ending .rk{font-size:32px;padding:8px 22px;border-radius:12px;margin:6px 0}
+.ending .path{font-weight:800;font-size:18px;margin:10px 0 4px}
+.ending .ms{color:var(--sub);font-size:13px}
+#resImg,#mImg{width:100%;border-radius:12px;margin-top:12px;display:block;border:1px solid var(--line)}
+.hint{font-size:12px;color:var(--sub);text-align:center;margin:6px 0 10px}
+.share a,.share button{display:block;text-align:center;text-decoration:none;color:#fff;background:#000;border-radius:10px;padding:10px 0;font-weight:700;font-size:14px;width:100%}
+.share button{background:#fff;color:var(--txt);border:1px solid var(--line)}
+
+.counts{display:flex;gap:6px 8px;flex-wrap:wrap;justify-content:center;margin:2px 0 12px}
+.counts span{font-size:13px;color:var(--sub)}
+.mini{background:#fff;border-radius:10px;padding:10px;font-size:13px;line-height:1.7;margin-bottom:8px}
+.mini .h{display:flex;gap:8px;align-items:center;margin-bottom:2px;font-weight:800}
+#recent{list-style:none;padding:0;margin:0;display:grid;gap:5px}
+#recent li{display:flex;gap:8px;align-items:center;font-size:13px;background:#ffffffb3;border-radius:8px;padding:7px 9px}
+.empty{color:var(--sub);font-size:13px}
+
+.stat{color:var(--sub);font-size:14px;margin:0 0 8px}
+.bar{height:8px;background:#fff;border-radius:99px;overflow:hidden}
+.bar i{display:block;height:100%;background:linear-gradient(90deg,#9b85ff,#ff7ab6)}
+.zcat h3{font-size:14px;margin:16px 0 6px;display:flex;justify-content:space-between}
+.zcat h3 span{color:var(--sub);font-weight:400}
+.zlist{list-style:none;padding:0;margin:0;display:grid;gap:5px}
+.zlist li{background:#fff;border-radius:8px;padding:7px 9px;font-size:13px;display:flex;gap:8px;align-items:center}
+.zlist li.lock{color:#b3abc6}
+#tList{list-style:none;padding:0;margin:0;display:grid;gap:7px}
+#tList li{background:#fff;border-radius:10px;padding:10px 12px}
+#tList li b{font-size:15px}
+#tList li p{margin:3px 0 0;font-size:12px;color:var(--sub)}
+#tList li.got{background:linear-gradient(90deg,#fff3c9,#fff);border:1px solid #e7c25a}
+#tList li.lock b{color:#b3abc6}
+#reset{margin-top:18px;background:#fff;border:1px solid var(--line);color:var(--sub);border-radius:10px;padding:9px 14px;font-size:13px}
+#reset.warn{border-color:#e5484d;color:#d6334a}
+.hellsw{display:flex;align-items:center;justify-content:space-between;gap:10px;background:#fff;border-radius:14px;padding:10px 14px;margin-bottom:10px;cursor:pointer;box-shadow:0 3px 10px #0000000d}
+.hellsw b{display:block;font-size:15px}.hellsw small{color:var(--sub);font-size:11px}
+.hellsw input{display:none}
+.hellsw i{flex:0 0 50px;height:28px;border-radius:99px;background:#d6d0e6;position:relative;transition:.25s}
+.hellsw i:after{content:"";position:absolute;left:3px;top:3px;width:22px;height:22px;border-radius:50%;background:#fff;transition:.25s;box-shadow:0 1px 3px #0003}
+.hellsw input:checked+i{background:#d6334a}.hellsw input:checked+i:after{left:25px}
+body.hell{background:radial-gradient(ellipse 60% 18% at 15% 92%,#3a0f18 0 60%,transparent 61%),radial-gradient(ellipse 50% 15% at 85% 96%,#3a0f18 0 60%,transparent 61%),linear-gradient(180deg,#1c0a10 0%,#3b1119 55%,#5a1a22 100%) fixed;color:#fbe9ec}
+body.hell h1{color:#ff5e6e;text-shadow:0 2px 0 #000}
+body.hell h1 small,body.hell .sub,body.hell .note,body.hell h2,body.hell footer,body.hell .stat{color:#d79aa3}
+body.hell .sub b{color:#fff}
+body.hell .tabs{background:#00000055}body.hell .tabs button.on{background:#2a1015;color:#fff}
+body.hell .panel,body.hell .hellsw,body.hell .bubble,body.hell .sec,body.hell #snd,body.hell .mini,body.hell #recent li,body.hell .zlist li,body.hell #tList li,body.hell .ev .box,body.hell #reset{background:#2a1015;color:#fbe9ec;border-color:#5a2630}
+body.hell .bubble:before{border-right-color:#2a1015}
+body.hell .ev.hell .box{background:#000}
+body.hell .hellsw small,body.hell .bubble small,body.hell .ev .box .c,body.hell .mental .lbl{color:#d79aa3}
+body.hell .big{background:linear-gradient(180deg,#ff5e6e,#b3182e);box-shadow:0 5px 0 #6b0d1b}
+body.hell .gauge{background:#1a080c;border-color:#5a2630}
+body.hell .share button{background:#2a1015;color:#fff;border-color:#5a2630}
+html:has(body.hell){background:#5a1a22}
+footer{margin-top:28px;font-size:11px;color:var(--sub);line-height:1.6}
+#toast{position:fixed;left:50%;top:16px;transform:translate(-50%,calc(-100% - 40px));background:#fff3c9;border:1px solid #e7c25a;color:#6b4d00;padding:10px 18px;border-radius:12px;font-weight:800;font-size:14px;transition:transform .35s;z-index:9;box-shadow:0 8px 24px #0002;white-space:nowrap}
+#toast.on{transform:translate(-50%,0)}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <div class="top"><h1>親ガチャ<small>～魂の待合室～</small></h1><button id="snd"></button></div>
+  <div class="sub"><span>送り出した魂 <b id="total">0</b> 人</span></div>
+  <nav class="tabs">
+    <button data-tab="play" class="on">天界</button>
+    <button data-tab="zukan">あるある図鑑</button>
+    <button data-tab="titles">称号</button>
+  </nav>
+</header>
+
+<section id="play" class="tab on">
+  <div class="god">
+    <svg viewBox="0 0 100 110" aria-hidden="true">
+      <ellipse cx="50" cy="12" rx="24" ry="6" fill="none" stroke="#ffd34d" stroke-width="5"/>
+      <circle cx="50" cy="44" r="24" fill="#ffe2c6"/>
+      <path d="M26 44 Q24 20 50 20 Q76 20 74 44 Q66 30 50 30 Q34 30 26 44Z" fill="#f2f2f2"/>
+      <path d="M38 44 h8 M54 44 h8" stroke="#5b4636" stroke-width="3" stroke-linecap="round"/>
+      <path d="M28 52 Q30 86 50 92 Q70 86 72 52 Q62 60 50 58 Q38 60 28 52Z" fill="#fff" stroke="#e6e6e6" stroke-width="1.5"/>
+      <path d="M44 62 Q50 65 56 62" stroke="#c48a6a" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+      <path d="M22 96 Q50 84 78 96 L82 110 H18Z" fill="#fff" stroke="#e6e6e6" stroke-width="1.5"/>
+    </svg>
+    <div class="bubble"><small>受付担当の神様</small><span id="say">はい次の魂〜。</span></div>
+  </div>
+
+  <!-- 待合室 -->
+  <div class="screen on" id="sHome">
+    <label class="hellsw" id="hellsw"><span><b>😈 地獄モード</b><small>ハズレ多め・リアルな毒親あるあるが出ます</small></span><input type="checkbox" id="hellChk"><i></i></label>
+    <button class="big" id="go">生まれる</button>
+    <div class="row2"><button class="sec" id="x10">10人まとめて送り出す</button><button class="sec" id="x100">100人送り出す</button></div>
+    <div class="legend" id="legend"></div>
+    <p class="note">家を選んで生まれ、0歳から25歳までの人生をめくっていきます。<br>選ぶときに光る家ほど、極端な人生になります（どっちの意味かは秘密）。</p>
+    <div id="multi" class="panel" style="display:none;margin-top:14px"></div>
+    <h2>最近送り出した魂</h2>
+    <ol id="recent"></ol>
+  </div>
+
+  <!-- 家を選ぶ -->
+  <div class="screen" id="sChoose">
+    <div class="cards" id="cards"></div>
+    <p class="note" id="chooseNote">生まれる家を1つ選んでください。中身は見えません。</p>
+  </div>
+
+  <!-- 人生 -->
+  <div class="screen" id="sLife">
+    <div class="panel">
+      <div class="lifehead"><b id="lifeTitle"></b><span class="note" style="margin:0" id="soulNo"></span></div>
+      <div class="mental"><div class="lbl"><span>メンタル</span><span id="mVal">60</span></div><div class="gauge" id="gauge"><i id="gBar"></i></div></div>
+      <div class="limit" id="limit">メンタル限界。それでも人生は続く。</div>
+      <ol class="tl" id="tl"></ol>
+      <button class="big" id="next">誕生する ▶</button>
+      <button class="sec" id="skip">最後まで飛ばす</button>
+    </div>
+  </div>
+
+  <!-- 結末 -->
+  <div class="screen" id="sEnd">
+    <div class="panel ending">
+      <div class="note" style="margin:0">そして今、あなたの実家は…</div>
+      <div id="endRank"></div>
+      <div class="path" id="endPath"></div>
+      <div class="ms" id="endMs"></div>
+      <img id="resImg" alt="人生年表の画像">
+      <p class="hint">画像は長押し（PCは右クリック）で保存 → Xのポストに添付してシェア</p>
+      <div class="share row2"><a id="xlink" target="_blank" rel="noopener">Xでポスト</a><button id="copy">テキストをコピー</button></div>
+      <button class="big" id="again" style="margin-top:12px">もう一度生まれる</button>
+      <button class="sec" id="home">待合室にもどる</button>
+    </div>
+  </div>
+</section>
+
+<section id="zukan" class="tab">
+  <p class="stat" id="zkStat"></p>
+  <div class="bar"><i id="zkBar"></i></div>
+  <div id="zkBody"></div>
+  <button id="reset">記録をリセット</button>
+</section>
+
+<section id="titles" class="tab">
+  <p class="stat" id="tStat"></p>
+  <ul id="tList"></ul>
+</section>
+
+<footer>※すべてネタです。実在の家庭や親を評価・格付けするものではありません。出現率はサイト独自の設定です。記録はこのブラウザ内にだけ保存されます。</footer>
+</div>
+<div id="toast"></div>
+
+<script>
+// ===== あるあるデータ [テキスト, 点数, 地獄モード限定?] (+2大当たり … -3地獄) =====
+const H = 1;
+const CATS = [
+  { key: "f", label: "父", age: "0歳", items: [
+    ["怒ったことは一度もないのに、ちゃんと尊敬できる", 2], ["何を相談しても「お前が決めたならいい」と言ってくれる", 2],
+    ["休日は車でどこへでも連れて行ってくれる", 1], ["本だけは無条件で買ってくれる", 1], ["テストが悪くても「次があるだろ」で終わる", 1], ["夜中の駅まで嫌な顔せず迎えに来てくれる", 1],
+    ["テレビのニュースに一人で文句を言う", 0], ["リモコンの電池を限界まで替えない", 0], ["ビールを飲むたびに「くぅ〜」と言う", 0], ["寝てると思ってテレビを消すと「見てる」と言う", 0], ["カーナビより自分の勘を信じる", 0], ["同じ昔話を年に10回する", 0],
+    ["機嫌が悪いと家の空気が全部変わる", -1], ["部屋に入るとき絶対にノックしない", -1], ["子どもの友達にやたら話しかける", -1], ["自分が見たい番組のためにチャンネルを勝手に変える", -1],
+    ["恋人を連れて行ったら初対面で将来の話を始める", -2], ["授業参観で一番大きい声で名前を呼ぶ", -2],
+    ["「誰のおかげでメシが食えてると思ってる」が口ぐせ", -2, H], ["敬語を使わないと怒鳴られる", -2, H], ["話しかけても返事は説教だけ", -2, H],
+    ["理由も言わずに突然キレて殴る", -3], ["機嫌が悪い日は子どもが怒られ役", -3], ["酒が入ると手がつけられない", -3], ["給料日にパチンコで全部溶かす", -3],
+    ["家に借金の取り立てが来る", -3], ["ある日いなくなって、それきり", -3], ["勘違いで殴っておいて、絶対に謝らない", -3]
+  ]},
+  { key: "m", label: "母", age: "4歳", items: [
+    ["何も言わなくても好物がちゃんと出てくる", 2], ["進路に一切口出しせず、全力で応援してくれる", 2],
+    ["友達をいつ連れてきても歓迎してくれる", 1], ["夜中に帰っても「ご飯あるよ」と言ってくれる", 1], ["お小遣いの交渉にちゃんと応じてくれる", 1], ["洗濯物がいつもいい匂い", 1],
+    ["電話に出るときだけ声が1オクターブ高い", 0], ["「あれ取って」の“あれ”が何なのか分からない", 0], ["スーパーの袋を袋に入れて保管している", 0], ["ドラマの犯人を最初の10分で当てる", 0], ["「昔はかわいかったのに」が口ぐせ", 0],
+    ["「あんたのために言ってるのよ」が口ぐせ", -1], ["勝手に部屋を掃除して大事なものを捨てる", -1], ["友達のお母さんと情報網がつながっている", -1], ["「勉強してるの？」を1日5回聞く", -1],
+    ["恋人ができたことを親戚中に広める", -2], ["頼んでもいない大学のパンフレットを集めてくる", -2],
+    ["よその子と比べて責める", -2, H], ["人前で子どもを見下すことを言う", -2, H], ["買ったばかりの物を「あんたにはもったいない」と取り上げる", -2, H], ["「お前は何もできない」が口ぐせ", -2, H],
+    ["「あんたなんか産まなきゃよかった」と言う", -3], ["きょうだいと露骨に差をつける", -3], ["バイト代を勝手に使い込む", -3], ["子どもの前で毎日父の悪口を言う", -3],
+    ["集めていた趣味の物をまとめてゴミに出す", -3], ["毎晩酒を飲んで、昔のことを蒸し返して絡んでくる", -3], ["愚痴と悩み相談の聞き役はずっと子ども", -3]
+  ]},
+  { key: "r", label: "家のルール", age: "9歳", items: [
+    ["誕生日は毎年、本人が行き先を決められる", 2], ["門限なし。ただし連絡だけはする", 2],
+    ["ゲームは時間無制限。ただし宿題が先", 1], ["欲しいものはプレゼンすれば買ってもらえる", 1], ["休日は好きなだけ寝ていい", 1],
+    ["夕飯は全員そろってから", 0], ["家族のグループLINEがあるが父しか発言しない", 0], ["エアコンは28度から絶対に下げない", 0], ["年末は家族総出で大掃除", 0],
+    ["大学生になっても門限は18時", -1], ["ゲームは1日30分。1秒でも過ぎたら没収", -1], ["お風呂の順番がガチガチに決まっている", -1], ["チャンネル権は父にしかない", -1],
+    ["スマホは夜9時にリビングで回収", -2], ["外泊は一切禁止。修学旅行もしぶしぶ", -2],
+    ["自分の部屋もテレビもない", -2, H], ["誕生日もクリスマスもお年玉もない", -2, H], ["夢を話すとリスクを並べられて終わり", -2, H], ["塾も習い事も勝手に申し込まれている", -2, H],
+    ["奨学金の振込先が親の口座", -3], ["親の機嫌を読むのが子どもの仕事", -3], ["夫婦ゲンカの仲裁役は子ども", -3], ["電気が止まる月がある", -3],
+    ["熱があっても病院に連れて行ってもらえない", -3], ["学校の教材費を払ってもらえない", -3], ["親の宗教の集まりに毎週連れて行かれる", -3]
+  ]},
+  { key: "d", label: "食卓", age: "14歳", items: [
+    ["誕生日は好物だけのフルコース", 2], ["毎日ちがうメニューで、しかも全部うまい", 2],
+    ["ハンバーグの日が月4回ある", 1], ["揚げたての唐揚げをつまみ食いしていい", 1], ["お弁当が毎日ちょっと凝っている", 1],
+    ["カレーにちくわが入っている", 0], ["目玉焼きには必ずソース", 0], ["冷蔵庫に麦茶が常に3本ある", 0], ["すき焼きの肉は数えて配られる", 0], ["ご飯のおかわりはセルフ", 0],
+    ["嫌いな野菜が毎食どこかに入っている", -1], ["カレーが3日続く", -1], ["夕飯は19時ちょうど。1分遅れると片付けられる", -1],
+    ["おやつがすべて煮干し", -2], ["味付けが毎回“実験”", -2],
+    ["成長期なのにおかずが毎日一品", -2, H], ["手伝わないとご飯が出てこない", -2, H], ["食事中はずっと説教", -2, H],
+    ["夕飯は毎日ひとりでカップ麺", -3], ["食費は1日300円渡されて終わり", -3], ["親の分だけおかずが豪華", -3], ["食卓の話題は毎晩、離婚の相談", -3],
+    ["きょうだいだけ外食に連れて行かれる", -3]
+  ]},
+  { key: "a", label: "大人になってから", age: "25歳", items: [
+    ["たまに帰るとごちそうで迎えてくれる", 2], ["困ったときだけ黙って助けてくれる", 2],
+    ["帰省の交通費を出してくれる", 1], ["「元気ならそれでいい」としか言わない", 1], ["結婚や仕事に一切口を出さない", 1],
+    ["LINEの文面がずっと敬語", 0], ["帰省するたびに「痩せた？」と聞く", 0], ["仕送りの段ボールに謎の調味料が入っている", 0], ["「結婚は？」を年1回だけ聞く", 0], ["スタンプの使い方が独特", 0],
+    ["電話が毎日かかってくる", -1], ["近況を親戚に勝手に話している", -1], ["帰省のたびに説教が始まる", -1],
+    ["仕事中に鬼電してくる", -2], ["「孫はまだ？」を会うたびに言う", -2],
+    ["連絡しないと「冷たい子に育った」と言われる", -2, H], ["何をしても「親のおかげ」にされる", -2, H],
+    ["家を出ようとしたら「私を見捨てるのか」と言われた", -3], ["「育ててやった恩を忘れたのか」と仕送りを要求される", -3], ["年を取ったら「あの時は余裕がなかった」と被害者ぶる", -3],
+    ["周りに話しても「親も大変だったんだよ」で片付けられる", -3], ["「金を貸さないと死ぬ」と電話がくる", -3], ["職場まで突撃してくる", -3]
+  ]}
+];
+const W = {
+  off: { 2: 1, 1: 3, 0: 4, "-1": 3, "-2": 1 },
+  on:  { 2: .5, 1: 1.6, 0: 2.4, "-1": 2.6, "-2": 2, "-3": 1.4 }
+};
+const TAGN = { 2: "大当たり", 1: "当たり", 0: "ふつう", "-1": "ハズレ", "-2": "大ハズレ", "-3": "地獄" };
+const DM = { 2: 18, 1: 9, 0: 0, "-1": -9, "-2": -16, "-3": -26 };
+CATS.forEach(c => c.items = c.items.map(([n, s, h], i) => ({ n, s, h: !!h || s === -3, i })));
+const pool = (c, hell) => c.items.filter(x => hell || !x.h).map(x => ({ ...x, w: W[hell ? "on" : "off"][x.s] }));
+
+const RANKS = [
+  { id: "leg", name: "逆に伝説", cmt: ["生き抜いただけで優勝", "この家を出たあなたは強い", "ここまで来ると一生使えるネタ", "すべらない話の素材が全部そろった"], path: ["始発で上京。振り返らなかった", "この人生を全部ネタにして生きていく"] },
+  { id: "dh", name: "大ハズレ", cmt: ["大人になってから答え合わせが始まる", "一人暮らしの解放感がすごいタイプ", "帰省は年1回で十分"], path: ["卒業式の翌日に家を出た", "実家を出た日に一人でケーキを買った"] },
+  { id: "h", name: "ハズレ", cmt: ["反抗期が長引くタイプの家", "たまに家出を考えた", "友達の家がうらやましかった"], path: ["志望校は「実家から遠い順」で選んだ", "バイト代を貯めて一人暮らしを計画中"] },
+  { id: "n", name: "ふつう", cmt: ["THE・日本の家庭", "文句と感謝が半分ずつ", "大人になって良さが分かるやつ"], path: ["地元の大学に普通に進学", "家を出るか迷って、とりあえず残った"] },
+  { id: "a", name: "当たり", cmt: ["なんだかんだ感謝してる", "たまにムカつくけど、いい家", "帰省が地味に楽しみ"], path: ["なんだかんだ実家から通学", "上京の日、駅で少しだけ泣いた"] },
+  { id: "da", name: "大当たり", cmt: ["友達に「お前んち住みたい」と言われる", "この家で育つと性格が良くなる", "実家が最高のホテル"], path: ["仕送りつきで一人暮らしスタート", "進路を話したら家族会議が祝賀会になった"] },
+  { id: "god", name: "神ガチャ", cmt: ["前世でどれだけ徳を積んだのか", "うらやましがられすぎて逆に気をつかう", "このまま実家に永住したい"], path: ["実家から通える大学へ。家を出る理由がない", "18歳の春、親と二人旅に出た"] }
+];
+const RI = Object.fromEntries(RANKS.map((r, i) => [r.id, i]));
+const RN = Object.fromEntries(RANKS.map(r => [r.id, r.name]));
+const T = { off: [7, 4, 2, -1, -3, -6], on: [5, 2, 0, -3, -6, -12] };
+const rankOf = (s, hell) => { const t = T[hell ? "on" : "off"]; return s >= t[0] ? "god" : s >= t[1] ? "da" : s >= t[2] ? "a" : s >= t[3] ? "n" : s >= t[4] ? "h" : s >= t[5] ? "dh" : "leg"; };
+const SURNAMES = ["佐藤", "鈴木", "高橋", "田中", "伊藤", "渡辺", "山本", "中村", "小林", "加藤", "吉田", "山田", "佐々木", "松本", "井上", "木村", "林", "清水", "森", "池田"];
+const rnd = a => a[Math.random() * a.length | 0];
+
+function pick(arr) {
+  let r = Math.random() * arr.reduce((t, x) => t + x.w, 0);
+  for (const x of arr) { if ((r -= x.w) < 0) return x; }
+  return arr[arr.length - 1];
+}
+function draw() {
+  const hell = !!state.hell;
+  const its = CATS.map(c => pick(pool(c, hell)));
+  const score = its.reduce((t, x) => t + x.s, 0), rank = rankOf(score, hell), R = RANKS[RI[rank]];
+  let m = 60, zero = false;
+  for (const x of its) { m = Math.max(0, Math.min(100, m + DM[x.s])); if (m === 0) zero = true; }
+  const q = Math.random();
+  const lv = (rank === "god" || rank === "leg") ? 3 : (rank === "da" || rank === "dh") ? (q < .3 ? 3 : 2) : (rank === "a" || rank === "h") ? (q < .15 ? 2 : 1) : (q < .03 ? 2 : 1);
+  return { its: its.map(x => x.i), score, rank, hell, lv, cmt: rnd(R.cmt), path: rnd(R.path), sur: rnd(SURNAMES), soul: String(Math.random() * 100000 | 0).padStart(5, "0"), mental: m, zero };
+}
+const itemOf = (r, ci) => CATS[ci].items[r.its[ci]];
+
+// ===== 保存 =====
+const KEY = "oya-gacha-v2";
+const fresh = () => ({ total: 0, ranks: {}, seen: { f: [], m: [], r: [], d: [], a: [] }, titles: [], recent: [], flags: {}, sound: true, hell: false, hellCount: 0 });
+let state;
+try { state = Object.assign(fresh(), JSON.parse(localStorage.getItem(KEY)) || {}); } catch (e) { state = fresh(); }
+CATS.forEach(c => { if (!state.seen[c.key]) state.seen[c.key] = []; });
+function save() { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {} }
+function record(r) {
+  state.total++;
+  state.ranks[r.rank] = (state.ranks[r.rank] || 0) + 1;
+  CATS.forEach((c, ci) => { if (!state.seen[c.key].includes(r.its[ci])) state.seen[c.key].push(r.its[ci]); });
+  if (r.zero) state.flags.zero = true;
+  if (r.hell) state.hellCount = (state.hellCount || 0) + 1;
+  if (r.its.every((_, ci) => itemOf(r, ci).s === -3)) state.flags.allHell = true;
+  state.recent.unshift({ its: r.its, rank: r.rank, sur: r.sur });
+  state.recent.length = Math.min(state.recent.length, 30);
+}
+
+// ===== 称号 =====
+const rc = id => state.ranks[id] || 0;
+const seenAll = () => CATS.reduce((t, c) => t + state.seen[c.key].length, 0);
+const ITEM_TOTAL = CATS.reduce((t, c) => t + c.items.length, 0);
+const TITLES = [
+  { id: "first", name: "誕生", desc: "はじめて生まれた", t: () => state.total >= 1 },
+  { id: "t100", name: "転生しすぎ", desc: "通算100人送り出した", t: () => state.total >= 100 },
+  { id: "t1000", name: "神様の右腕", desc: "通算1000人送り出した", t: () => state.total >= 1000 },
+  { id: "da", name: "勝ち組", desc: "大当たりを引いた", t: () => rc("da") > 0 },
+  { id: "dh", name: "強く生きろ", desc: "大ハズレを引いた", t: () => rc("dh") > 0 },
+  { id: "god", name: "前世で徳を積んだ", desc: "神ガチャを引いた", t: () => rc("god") > 0 },
+  { id: "leg", name: "すべらない話", desc: "逆に伝説を引いた", t: () => rc("leg") > 0 },
+  { id: "both", name: "天国と地獄", desc: "神ガチャと逆に伝説の両方を引いた", t: () => rc("god") > 0 && rc("leg") > 0 },
+  { id: "zero", name: "それでも生きてる", desc: "メンタル0になっても生き抜いた", t: () => !!state.flags.zero },
+  { id: "hell100", name: "地獄の常連", desc: "地獄モードで100人送り出した", t: () => (state.hellCount || 0) >= 100 },
+  { id: "allHell", name: "地獄の五重奏", desc: "5つすべて地獄を引いた", hidden: true, t: () => !!state.flags.allHell },
+  { id: "n50", name: "THE・日本の家庭", desc: "ふつうを50回引いた", t: () => rc("n") >= 50 },
+  { id: "half", name: "あるある中級者", desc: "あるある図鑑を50%埋めた", t: () => seenAll() >= Math.ceil(ITEM_TOTAL / 2) },
+  { id: "comp", name: "あるある博士", desc: "あるある図鑑をすべて埋めた", t: () => seenAll() >= ITEM_TOTAL }
+];
+function checkTitles() {
+  const got = [];
+  for (const t of TITLES) if (!state.titles.includes(t.id) && t.t()) { state.titles.push(t.id); got.push(t.name); }
+  got.forEach((n, i) => setTimeout(() => toast("称号獲得：「" + n + "」"), 900 + i * 1600));
+}
+let toastTimer;
+function toast(msg) {
+  const el = document.getElementById("toast");
+  el.textContent = msg; el.classList.add("on");
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => el.classList.remove("on"), 1400);
+  tone(880, .12, "triangle", .06); tone(1320, .2, "triangle", .06, .1);
+}
+
+// ===== 音 =====
+let ac = null;
+function initAudio() { try { if (!ac) ac = new (window.AudioContext || window.webkitAudioContext)(); if (ac.state === "suspended") ac.resume().catch(() => {}); } catch (e) { ac = null; } }
+function tone(f, d, type = "sine", vol = .05, delay = 0) {
+  if (!state.sound || !ac) return;
+  try {
+    const t = ac.currentTime + delay, o = ac.createOscillator(), g = ac.createGain();
+    o.type = type; o.frequency.value = f;
+    g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(.0001, t + d);
+    o.connect(g).connect(ac.destination); o.start(t); o.stop(t + d + .02);
+  } catch (e) {}
+}
+const chime = () => [1047, 1319, 1568].forEach((f, i) => tone(f, .5, "sine", .05, i * .08));
+function evSound(s) {
+  if (s >= 1) [660, 880, s === 2 ? 1320 : 0].filter(Boolean).forEach((f, i) => tone(f, .25, "triangle", .06, i * .08));
+  else if (s === 0) tone(520, .15, "sine", .05);
+  else if (s === -3) [110, 98, 82].forEach((f, i) => tone(f, .4, "sawtooth", .07, i * .15));
+  else [330, 262, s === -2 ? 196 : 0].filter(Boolean).forEach((f, i) => tone(f, .25, "square", .04, i * .1));
+}
+function fanfare(rank) {
+  const seq = { leg: [196, 185, 175, 165, 156, 147, 139, 131], dh: [262, 247, 233, 220], h: [330, 294], n: [523, 659], a: [523, 659, 784], da: [523, 659, 784, 1047, 1319], god: [523, 659, 784, 1047, 1319, 1568, 2093, 1568, 2093] }[rank];
+  const type = rank === "god" ? "sawtooth" : rank === "leg" ? "square" : "triangle";
+  seq.forEach((f, i) => tone(f, rank === "leg" ? .3 : .22, type, .06, i * (rank === "leg" ? .14 : .09)));
+}
+const sndBtn = document.getElementById("snd");
+const renderSnd = () => sndBtn.textContent = state.sound ? "🔊 音あり" : "🔇 音なし";
+sndBtn.onclick = () => { state.sound = !state.sound; initAudio(); renderSnd(); save(); };
+
+// ===== 共通 =====
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const badge = id => `<span class="rk r-${id}">${RN[id]}</span>`;
+const tag = s => `<span class="tg t${s}">${TAGN[s]}</span>`;
+const say = t => $("say").textContent = t;
+function show(id) { document.querySelectorAll(".screen").forEach(s => s.classList.toggle("on", s.id === id)); window.scrollTo({ top: 0, behavior: "smooth" }); }
+$("legend").innerHTML = RANKS.slice().reverse().map(r => badge(r.id)).join("");
+
+const IDLE = ["はい次の魂〜。", "今日あと3万人さばかないといけないんだよね。", "家？どれも一緒一緒。", "クレームは受け付けてません。", "選ばせてあげるだけ優しいでしょ。", "生まれたら天界のことは忘れるから安心して。"];
+const REACT = {
+  2: ["お、当たりじゃん。", "いい家だねえ。担当した私のおかげかな。"],
+  1: ["悪くないね。", "まあまあ当たり。"],
+  0: ["普通。私は好きよ、普通。", "どこの家もそんなもんよ。"],
+  "-1": ["あー、あるある。", "まあ、そういうこともある。"],
+  "-2": ["……おっと。", "それはちょっとキツいね。"],
+  "-3": ["あー……それは、うん。強く生きて。", "ごめん、そこは私の担当外。", "……見なかったことにしよう。"]
+};
+
+// ===== 流れ =====
+let run = null, busy = false;
+function goChoose() {
+  initAudio();
+  run = { t: draw(), step: 0, m: 60 };
+  $("multi").style.display = "none";
+  say("はい、この中から1つ選んで。中身？見せるわけないじゃん。");
+  $("chooseNote").textContent = "生まれる家を1つ選んでください。中身は見えません。";
+  $("cards").innerHTML = [0, 1, 2].map(i => `<div class="hc shuffle" data-i="${i}"><div class="in"><div class="b">？<span>家</span></div><div class="f"><div class="house">🏠</div><div class="sname"></div></div></div></div>`).join("");
+  document.querySelectorAll(".hc").forEach(c => c.onclick = () => pickCard(c));
+  busy = false;
+  show("sChoose");
+  tone(440, .1); tone(554, .1, "sine", .05, .1);
+}
+function pickCard(card) {
+  if (busy) return; busy = true;
+  document.querySelectorAll(".hc").forEach(c => { c.classList.remove("shuffle"); if (c !== card) c.classList.add("gone"); });
+  const lv = run.t.lv;
+  setTimeout(() => {
+    card.classList.add("l" + lv);
+    if (lv === 3) { say("……お、なんかすごいの引いたね。どっちの意味かは知らないけど。"); [523, 784, 1047, 1568, 2093].forEach((f, i) => tone(f, .4, "triangle", .06, i * .1)); $("chooseNote").textContent = "虹色に光った……！"; }
+    else if (lv === 2) { say("ちょっと濃いめの家だね。"); [523, 784, 1047].forEach((f, i) => tone(f, .35, "triangle", .06, i * .1)); $("chooseNote").textContent = "金色に光った。"; }
+    else { say("まあ普通じゃない？たぶん。"); tone(660, .3, "sine", .05); $("chooseNote").textContent = "白く光った。"; }
+  }, 450);
+  setTimeout(() => { card.querySelector(".sname").textContent = run.t.sur + "家"; card.classList.add("flip"); chime(); }, 1700);
+  setTimeout(startLife, 3000);
+}
+function startLife() {
+  busy = false;
+  run.step = 0; run.m = 60;
+  $("lifeTitle").textContent = run.t.sur + "家に生まれた";
+  $("soulNo").textContent = "魂No." + run.t.soul;
+  $("tl").innerHTML = ""; $("limit").classList.remove("on");
+  setMental(60);
+  $("next").textContent = "誕生する ▶"; $("next").disabled = false; $("skip").disabled = false;
+  say("はい、いってらっしゃい。");
+  show("sLife");
+}
+function setMental(v) {
+  $("mVal").textContent = v;
+  const b = $("gBar"); b.style.width = v + "%";
+  b.style.background = v >= 60 ? "#47c98a" : v >= 30 ? "#f2b84b" : "#e5484d";
+}
+function addEvent(ci) {
+  const it = itemOf(run.t, ci), cat = CATS[ci];
+  const prev = run.m; run.m = Math.max(0, Math.min(100, run.m + DM[it.s]));
+  const d = run.m - prev;
+  const li = document.createElement("li");
+  li.className = "ev" + (it.s === -3 ? " hell" : "");
+  li.innerHTML = `<div class="age">${cat.age}</div><div class="box"><div class="c">${esc(cat.label)} ${tag(it.s)}</div>${esc(it.n)}</div><div class="dm ${d > 0 ? "plus" : d < 0 ? "minus" : "zero"}">${d > 0 ? "+" : ""}${d}</div>`;
+  $("tl").appendChild(li);
+  setMental(run.m);
+  if (d < 0) { const g = $("gauge"); g.classList.remove("shake"); void g.offsetWidth; g.classList.add("shake"); }
+  if (run.m === 0) $("limit").classList.add("on");
+  say(rnd(REACT[it.s]));
+  evSound(it.s);
+  li.scrollIntoView({ behavior: "smooth", block: "nearest" });
+}
+function nextStep() {
+  if (!run || busy) return;
+  if (run.step < CATS.length) {
+    addEvent(run.step); run.step++;
+    $("next").textContent = run.step < CATS.length ? `${CATS[run.step].age}へ ▶` : "今の自分を見る ▶";
+  } else ending();
+}
+$("next").onclick = nextStep;
+$("skip").onclick = () => {
+  if (!run || busy) return;
+  busy = true; $("next").disabled = true; $("skip").disabled = true;
+  const tick = () => {
+    if (run.step < CATS.length) { addEvent(run.step); run.step++; setTimeout(tick, 380); }
+    else { busy = false; setTimeout(ending, 450); }
+  };
+  tick();
+};
+
+let shareText = "";
+function ending() {
+  const r = run.t;
+  record(r); afterBatch();
+  $("endRank").innerHTML = badge(r.rank);
+  $("endPath").textContent = "その後：" + r.path;
+  $("endMs").innerHTML = `神様「${esc(r.cmt)}」<br>最終メンタル ${run.m}`;
+  shareText = `親ガチャ${r.hell ? "（地獄モード）" : ""}の結果【${RN[r.rank]}】\n${r.sur}家に生まれた魂No.${r.soul}\n${CATS.map((c, ci) => `${c.age} ${c.label}：${itemOf(r, ci).n}`).join("\n")}\nその後：${r.path}\n#親ガチャ`;
+  $("xlink").href = "https://twitter.com/intent/tweet?text=" + encodeURIComponent(shareText);
+  say(rnd(["おつかれ。人生どうだった？", "はい、一丁あがり。", "次の魂どうぞ〜。"]));
+  show("sEnd");
+  setTimeout(() => fanfare(r.rank), 200);
+  makeImage(r, run.m);
+}
+$("go").onclick = goChoose;
+$("again").onclick = goChoose;
+$("home").onclick = () => { say(rnd(state.hell ? HELL_IDLE : IDLE)); show("sHome"); };
+$("copy").onclick = async e => {
+  try { await navigator.clipboard.writeText(shareText); e.target.textContent = "コピーしました"; }
+  catch (err) { e.target.textContent = "コピーできませんでした"; }
+  setTimeout(() => e.target.textContent = "テキストをコピー", 1500);
+};
+
+// ===== まとめて送り出す =====
+function miniCard(title, r) {
+  return `<div class="mini"><div class="h">${title}${badge(r.rank)}<span style="font-weight:400;color:var(--sub)">${esc(r.sur)}家</span></div>${CATS.map((c, ci) => { const it = itemOf(r, ci); return `${tag(it.s)} ${esc(c.label)}：${esc(it.n)}`; }).join("<br>")}</div>`;
+}
+function multi(n) {
+  initAudio();
+  const rs = [];
+  for (let i = 0; i < n; i++) { const r = draw(); record(r); rs.push(r); }
+  afterBatch();
+  const best = rs.reduce((a, b) => b.score > a.score ? b : a), worst = rs.reduce((a, b) => b.score < a.score ? b : a);
+  const cnt = {}; rs.forEach(r => cnt[r.rank] = (cnt[r.rank] || 0) + 1);
+  const p = $("multi");
+  p.innerHTML = `<div style="font-weight:800;text-align:center;margin-bottom:8px">${n}人の魂を送り出した</div>
+    <div class="counts">${RANKS.slice().reverse().map(k => `${badge(k.id)}<span>×${cnt[k.id] || 0}</span>`).join("")}</div>
+    ${miniCard("いちばん当たり", best)}${miniCard("いちばんハズレ", worst)}`;
+  p.style.display = "block";
+  say(n >= 100 ? "100人！？雑すぎない？まあいいけど。" : "まとめて流すね〜。はいはいはい。");
+  const rare = Math.abs(best.score) >= Math.abs(worst.score) ? best : worst;
+  fanfare(rare.rank);
+  p.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+$("x10").onclick = () => multi(10);
+$("x100").onclick = () => multi(100);
+function afterBatch() { checkTitles(); save(); renderAll(); }
+
+// ===== 人生年表の画像 =====
+const RCOL = { da: "#e2b04a", a: "#ef6a3a", n: "#9a90a8", h: "#3f74c9", dh: "#6d3fc0", leg: "#0b0b0b" };
+const TCOL = { 2: "#d29a2c", 1: "#ef6a3a", 0: "#9a90a8", "-1": "#3f74c9", "-2": "#6d3fc0", "-3": "#000" };
+function rainbow(ctx, x, y, w, h) { const g = ctx.createLinearGradient(x, y, x + w, y + h); ["#ff5f6d", "#ffc371", "#47e891", "#3fa9f5", "#b56bff"].forEach((c, i) => g.addColorStop(i / 4, c)); return g; }
+const rfill = (ctx, id, x, y, w, h) => id === "god" ? rainbow(ctx, x, y, w, h) : RCOL[id];
+const rtext = id => id === "da" ? "#3a2600" : id === "leg" ? "#d6b4ff" : "#fff";
+function rr(ctx, x, y, w, h, r) { ctx.beginPath(); ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r); ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath(); }
+function fitText(ctx, text, maxW, size, weight, family) { let s = size; do { ctx.font = `${weight} ${s}px ${family}`; s -= 2; } while (ctx.measureText(text).width > maxW && s > 14); }
+function pill(ctx, x, y, w, h, fill, txt, color, font, stroke) {
+  ctx.fillStyle = fill; rr(ctx, x, y, w, h, Math.min(12, h / 2)); ctx.fill();
+  if (stroke) { ctx.strokeStyle = stroke; ctx.lineWidth = 3; ctx.stroke(); }
+  ctx.fillStyle = color; ctx.font = font; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+  ctx.fillText(txt, x + w / 2, y + h / 2 + 1); ctx.textAlign = "left"; ctx.textBaseline = "alphabetic";
+}
+async function makeImage(r, mental) {
+  try { await Promise.all([document.fonts.load('40px "Dela Gothic One"'), document.fonts.load('800 40px "M PLUS 1p"')]); } catch (e) {}
+  const W = 1200, H = 900, c = document.createElement("canvas"); c.width = W; c.height = H;
+  const ctx = c.getContext("2d"), JP = '"M PLUS 1p", sans-serif', DG = '"Dela Gothic One", sans-serif';
+  const bg = ctx.createLinearGradient(0, 0, 0, H); if (r.hell) { bg.addColorStop(0, "#2a0d14"); bg.addColorStop(1, "#5a1a22"); } else { bg.addColorStop(0, "#a9d6ff"); bg.addColorStop(.5, "#d9ecff"); bg.addColorStop(1, "#ffe3f1"); }
+  ctx.fillStyle = bg; ctx.fillRect(0, 0, W, H);
+  if (!r.hell) { ctx.fillStyle = "#ffffffcc"; [[160, 890, 260, 60], [1000, 900, 280, 70], [600, 915, 260, 50]].forEach(([x, y, rx, ry]) => { ctx.beginPath(); ctx.ellipse(x, y, rx, ry, 0, 0, Math.PI * 2); ctx.fill(); }); }
+  ctx.lineWidth = 14; ctx.strokeStyle = r.rank === "leg" ? "#b56bff" : rfill(ctx, r.rank, 0, 0, W, H); rr(ctx, 7, 7, W - 14, H - 14, 28); ctx.stroke();
+  ctx.fillStyle = r.hell ? "#ff5e6e" : "#4b3aa8"; ctx.font = `44px ${DG}`; ctx.fillText(r.hell ? "親ガチャ 地獄モード" : "親ガチャ", 56, 92);
+  ctx.fillStyle = r.hell ? "#fff" : "#2b2540"; ctx.font = `800 30px ${JP}`; ctx.fillText(`${r.sur}家に生まれた魂の人生`, 56, 140);
+  ctx.fillStyle = r.hell ? "#e6aab1" : "#6d6488"; ctx.font = `700 22px ${JP}`; ctx.fillText(`魂No.${r.soul}　最終メンタル ${mental}`, 58, 176);
+  pill(ctx, 840, 50, 310, 92, rfill(ctx, r.rank, 840, 50, 310, 92), RN[r.rank], rtext(r.rank), `54px ${DG}`, r.rank === "leg" ? "#b56bff" : null);
+  ctx.fillStyle = "#ffffff"; ctx.fillRect(98, 214, 5, 564);
+  const rows = CATS.map((cat, ci) => { const it = itemOf(r, ci); return { age: cat.age, label: cat.label, s: it.s, txt: it.n }; });
+  rows.push({ age: "その後", label: "いま", s: null, txt: r.path });
+  rows.forEach((row, i) => {
+    const y = 210 + i * 96;
+    pill(ctx, 46, y, 108, 44, i === rows.length - 1 ? "#7a5cff" : "#4b3aa8", row.age, "#fff", `20px ${DG}`);
+    ctx.fillStyle = row.s === -3 ? "#120a0a" : "#ffffffee"; rr(ctx, 170, y - 8, 980, 82, 14); ctx.fill();
+    ctx.fillStyle = row.s === -3 ? "#ff8a95" : "#6d6488"; ctx.font = `700 20px ${JP}`; ctx.fillText(row.label, 192, y + 18);
+    if (row.s !== null) pill(ctx, 192 + ctx.measureText(row.label).width + 12, y + 0, 96, 26, TCOL[row.s], TAGN[row.s], row.s === -3 ? "#ff4d5e" : row.s === 2 ? "#2a1a00" : "#fff", `800 16px ${JP}`, row.s === -3 ? "#ff4d5e" : null);
+    ctx.fillStyle = row.s === -3 ? "#ffd9dc" : "#2b2540"; fitText(ctx, row.txt, 930, 32, 800, JP); ctx.fillText(row.txt, 192, y + 60);
+  });
+  ctx.fillStyle = r.hell ? "#ffb3bb" : "#4b3aa8"; fitText(ctx, `神様「${r.cmt}」`, 820, 28, 800, JP); ctx.fillText(`神様「${r.cmt}」`, 56, H - 40);
+  ctx.fillStyle = r.hell ? "#e6aab1" : "#6d6488"; ctx.font = `700 24px ${JP}`; ctx.textAlign = "right"; ctx.fillText("#親ガチャ", W - 48, H - 40); ctx.textAlign = "left";
+  $("resImg").src = c.toDataURL("image/png");
+}
+
+// ===== 描画 =====
+function renderRecent() {
+  $("recent").innerHTML = state.recent.length
+    ? state.recent.slice(0, 12).map(r => `<li>${badge(r.rank)}<span><b>${esc(r.sur || "")}家</b>　${esc(itemOf(r, 0).n)}</span></li>`).join("")
+    : `<li class="empty" style="background:none">まだ誰も生まれていません。</li>`;
+}
+function renderZukan() {
+  const got = seenAll();
+  $("zkStat").textContent = `あるある図鑑 ${got} / ${ITEM_TOTAL}`;
+  $("zkBar").style.width = (got / ITEM_TOTAL * 100) + "%";
+  $("zkBody").innerHTML = CATS.map(c => {
+    const items = [...c.items].sort((a, b) => b.s - a.s);
+    return `<div class="zcat"><h3>${esc(c.label)}<span>${state.seen[c.key].length} / ${c.items.length}</span></h3><ul class="zlist">${
+      items.map(it => state.seen[c.key].includes(it.i) ? `<li>${tag(it.s)}<span>${esc(it.n)}</span></li>` : `<li class="lock">${tag(it.s)}<span>？？？</span></li>`).join("")}</ul></div>`;
+  }).join("");
+}
+function renderTitles() {
+  $("tStat").textContent = `称号 ${state.titles.length} / ${TITLES.length}`;
+  $("tList").innerHTML = TITLES.map(t => {
+    const g = state.titles.includes(t.id);
+    return `<li class="${g ? "got" : "lock"}"><b>${g ? "🏅 " : "🔒 "}${g || !t.hidden ? t.name : "？？？"}</b><p>${g || !t.hidden ? t.desc : "条件はひみつ"}</p></li>`;
+  }).join("");
+}
+function renderAll() { $("total").textContent = state.total.toLocaleString(); renderRecent(); renderZukan(); renderTitles(); }
+
+document.querySelectorAll(".tabs button").forEach(b => b.onclick = () => {
+  document.querySelectorAll(".tabs button").forEach(x => x.classList.toggle("on", x === b));
+  document.querySelectorAll(".tab").forEach(s => s.classList.toggle("on", s.id === b.dataset.tab));
+});
+const resetBtn = $("reset"); let resetArmed = false;
+resetBtn.onclick = () => {
+  if (!resetArmed) { resetArmed = true; resetBtn.classList.add("warn"); resetBtn.textContent = "もう一度押すと全記録を消します"; setTimeout(() => { resetArmed = false; resetBtn.classList.remove("warn"); resetBtn.textContent = "記録をリセット"; }, 3000); return; }
+  const snd = state.sound; state = fresh(); state.sound = snd; save(); renderAll();
+  resetArmed = false; resetBtn.classList.remove("warn"); resetBtn.textContent = "記録をリセット";
+};
+const HELL_IDLE = ["今日は地獄の受付も兼任してます。", "このモード、クレーム多いんだよね。", "強く生きてね。それしか言えない。", "どの家も選び直しはできません。"];
+function applyHell() { document.body.classList.toggle("hell", !!state.hell); $("hellChk").checked = !!state.hell; }
+$("hellChk").onchange = e => { state.hell = e.target.checked; save(); applyHell(); initAudio(); if (state.hell) { say(rnd(HELL_IDLE)); [110, 98, 82].forEach((f, i) => tone(f, .4, "sawtooth", .06, i * .15)); } else { say("はい、通常営業に戻ります。"); chime(); } };
+applyHell(); say(rnd(state.hell ? HELL_IDLE : IDLE)); renderSnd(); renderAll();
+</script>
+</body>
+</html>
