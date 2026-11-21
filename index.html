@@ -250,6 +250,52 @@ button.red{background:linear-gradient(180deg,#ff7a5a 0%,#d0383a 50%,#7a1420 100%
 .rec{background:linear-gradient(#141a40,#0a0d24);border-radius:6px}
 #flashLayer{position:fixed;inset:0;pointer-events:none;z-index:9;background:#fff;opacity:0}
 </style>
+<style>
+/* ===== 演出強化 第2弾 ===== */
+#encCv{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:11}
+.bgpix{position:absolute;inset:0;width:100%;height:100%;image-rendering:pixelated;image-rendering:crisp-edges;z-index:0;border-radius:7px}
+#stage .ebox,#stage .estats{position:relative;z-index:1}
+#stage.sv{justify-content:flex-start;padding-top:12px}
+#stage.sv .ebox,#stage.sv .estats{width:56%;align-self:flex-end;margin-right:3%}
+#stage.sv #eWrap{align-self:flex-end;margin:8px 7% 6px 0 !important;z-index:1}
+.party-side{position:absolute;left:5%;bottom:16%;z-index:2;display:flex;flex-direction:column;align-items:flex-start;gap:0}
+.party-side .allies{display:flex;gap:2px;margin-left:16px;margin-bottom:-6px}
+.party-side .allies canvas{animation:bob 1.6s ease-in-out infinite;filter:drop-shadow(0 3px 0 rgba(0,0,0,.45))}
+.party-side .allies canvas:nth-child(2){animation-delay:-.5s}.party-side .allies canvas:nth-child(3){animation-delay:-1s}
+.party-side .svHero{position:relative}
+.party-side .svHero canvas{display:block;animation:bob 1.4s ease-in-out infinite;filter:drop-shadow(0 4px 0 rgba(0,0,0,.5))}
+.party-side .svHero::after{content:'';position:absolute;left:10%;right:10%;bottom:-6px;height:10px;background:radial-gradient(ellipse,rgba(0,0,0,.55),transparent 70%)}
+.mcircle{position:absolute;left:50%;bottom:-10px;width:90px;height:30px;margin-left:-45px;border:2px solid #c9a6ff;border-radius:50%;box-shadow:0 0 12px #a070ff,inset 0 0 12px #a070ff;animation:mc .55s ease-out forwards;pointer-events:none}
+.mcircle::before{content:'';position:absolute;inset:5px;border:1px dashed #fff;border-radius:50%}
+@keyframes mc{0%{transform:scale(.2);opacity:0}30%{transform:scale(1.1);opacity:1}100%{transform:scale(1.3);opacity:0}}
+/* スロット */
+.slot{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;width:min(340px,86vw);position:relative;z-index:1}
+.reel{background:linear-gradient(180deg,#05060f,#1a1f45 50%,#05060f);border:3px solid #fff;border-radius:8px;box-shadow:0 0 0 3px #000,inset 0 0 12px #000;padding:5px 2px 6px;text-align:center;position:relative;overflow:visible}
+.reel .lb{font-size:11px;color:#b9c3ff}
+.reel .num{font-size:26px;color:#fff;text-shadow:2px 2px 0 #000;height:28px;line-height:28px;overflow:hidden}
+.reel.spin .num{color:#9aa4e0;filter:blur(.6px);animation:spinY .08s linear infinite}
+@keyframes spinY{50%{transform:translateY(-3px)}}
+.reel.stop{animation:reelStop .3s cubic-bezier(.2,1.6,.4,1)}
+@keyframes reelStop{30%{transform:scale(1.15)}}
+.reel.gift{border-color:#ffd84a;box-shadow:0 0 0 3px #000,0 0 18px #ffd84a,inset 0 0 14px rgba(255,216,74,.4)}
+.reel.gift .num{color:#ffe14a;text-shadow:2px 2px 0 #7a3b00,0 0 10px #ffb000}
+.stamp{position:absolute;right:-8px;top:-12px;background:#d01a1a;color:#fff;font-size:12px;padding:2px 5px;border:2px solid #fff;border-radius:4px;transform:rotate(14deg);box-shadow:0 2px 0 #000;animation:stamp .35s cubic-bezier(.2,1.8,.4,1)}
+@keyframes stamp{from{transform:rotate(14deg) scale(3);opacity:0}}
+.slotTitle{font-size:14px;color:#ffd84a;text-shadow:2px 2px 0 #000;margin-bottom:8px;position:relative;z-index:1;letter-spacing:2px}
+.slotRank{margin-top:10px;font-size:15px;position:relative;z-index:1;min-height:22px;text-shadow:2px 2px 0 #000}
+.tier4 .reel{animation:rainbowB 1s linear infinite}
+@keyframes rainbowB{0%{filter:hue-rotate(0)}100%{filter:hue-rotate(360deg)}}
+/* 宝箱 */
+.chest{position:relative}
+.chest canvas{position:absolute;left:0;top:0;image-rendering:pixelated}
+.chest .lid{transform-origin:50% 38%;transition:transform .45s cubic-bezier(.3,1.6,.5,1)}
+.chest.open .lid{transform:translateY(-34%) rotate(-18deg)}
+.chest .beam{position:absolute;left:12%;right:12%;bottom:55%;height:0;background:linear-gradient(0deg,rgba(255,236,150,.95),rgba(255,236,150,0));filter:blur(1px);transition:height .45s ease-out;pointer-events:none}
+.chest.open .beam{height:160%}
+.chest.rainbow .beam{background:linear-gradient(0deg,#ff5a5a,#ffd84a,#6dff8a,#7fc8ff,#d9b3ff,rgba(255,255,255,0));animation:rainbowB .6s linear infinite}
+/* ダメージ数字(桁で大きく) */
+.pop.huge{color:#ff5a3a;text-shadow:4px 4px 0 #400,-2px -2px 0 #000,2px -2px 0 #000,-2px 2px 0 #000,0 0 24px #ff3000}
+</style>
 </head>
 <body>
 <canvas id="bgScene"></canvas><canvas id="fxLayer"></canvas><div id="flashLayer"></div>
@@ -777,11 +823,12 @@ async function birth() {
   if (fb) force = '';
   for (const sb of SPECIAL_BIRTHS) if (fb === sb.key || Math.random() < CFG.specialBirthRate) { special = sb; break; }
   if (special) final[special.stat] = 10000;
-  const t0 = Date.now();
+  if (window.slotReveal) await slotReveal(final);
+  else { const t0 = Date.now();
   while (Date.now() - t0 < 600) {
     KEYS.forEach(k => hero.base[k] = rollStat());
     hero.maxhp = hero.hp = hero.base.hp; renderHero(); SFX.tick(); await sleep(50);
-  }
+  } }
   hero.base = final; hero.maxhp = hero.hp = final.hp; hero.title = special ? special.title : '勇者';
   if (special) {
     $('#dim').style.opacity = .8; await sleep(500);
@@ -1212,7 +1259,7 @@ function chooseBox(f) {
       const el = document.createElement('div'); el.className = 'pcard' + (isRareLoot(loot[i]) ? ' rare' : '');
       el.innerHTML = `<div class="in"><div class="b"></div><div class="f"></div></div>`;
       const back = el.querySelector('.b');
-      back.append(mkCv(SPR.box, PAL.box, b[1]));
+      back.append(window.mkChest ? mkChest(b[1]) : mkCv(SPR.box, PAL.box, b[1]));
       back.insertAdjacentHTML('beforeend', `<span>${b[0]}</span>`);
       if (isRareLoot(loot[i])) {                                // きらきら
         for (let k = 0; k < 7; k++) {
@@ -1254,6 +1301,7 @@ function chooseBox(f) {
             await sleep(1000);
             dim.style.opacity = 0; await sleep(250); dim.style.transition = '';
           }
+          if (window.openLid) await openLid(el, isRareLoot(loot[i]));
           SFX.flip(); inner.style.transform = 'rotateX(180deg)';
           await sleep(650);
           cards.forEach((c, j) => { if (j !== i) c.querySelector('.in').style.transform = 'rotateX(180deg)'; });
@@ -1527,7 +1575,7 @@ title();
   rs(); addEventListener('resize', rs); requestAnimationFrame(loop);
 
   const enemyEl = () => document.querySelector('#eWrap canvas');
-  const heroEl = () => document.getElementById('heroCv');
+  const heroEl = () => document.querySelector('.svHero canvas') || document.getElementById('heroCv');
   const stageEl = () => document.getElementById('stage');
   function flashScreen(a = .6, ms = 300, color = '#fff') { const f = document.getElementById('flashLayer'); f.style.background = color; f.style.transition = 'none'; f.style.opacity = a; void f.offsetWidth; f.style.transition = `opacity ${ms}ms`; f.style.opacity = 0; }
   function whiten(el, ms = 90) { if (!el) return; const w = el.parentNode; w.style.filter = 'brightness(3) saturate(0)'; setTimeout(() => { w.style.filter = ''; }, ms); }
@@ -1560,7 +1608,245 @@ title();
   const _pop = popup; popup = function (...a) { const r = _pop.apply(this, a); const p = document.querySelector('#stage .pop:last-of-type'); if (p) { p.style.left = `calc(50% + ${Math.round((Math.random() - .5) * 70)}px)`; p.style.top = (32 + Math.random() * 14) + '%'; } return r; };
   // 勇者のドット絵を包んで、ふわふわ動かす(オーラの演出は元のまま)
   const hc = document.getElementById('heroCv'); const hw = document.createElement('div'); hw.className = 'heroWrap'; hc.parentNode.insertBefore(hw, hc); hw.appendChild(hc);
+  window.__fx = { burst, ring, flashScreen, kick, add, center, whiten };
   const tc0 = document.querySelector('#stage .center > canvas'); if (tc0) tc0.classList.add('titleHero');
+})();
+</script>
+<script>
+// ===== 演出強化 第2弾(サイドビュー戦闘・誕生スロット・画面切り替え・背景・撃破・宝箱・数字・BGM) =====
+(function () {
+  const F = window.__fx; if (!F) return;
+  const rnd = Math.random;
+  const st = () => document.getElementById('stage');
+  const sleep2 = ms => new Promise(r => setTimeout(r, ms));
+
+  // ---------- BGM(通常戦闘・フィールド) ----------
+  SONGS.field = { bpm: 100, soft: true,
+    bass: [48,0,0,0, 55,0,0,0, 53,0,0,0, 55,0,0,0, 48,0,0,0, 57,0,0,0, 53,0,0,0, 55,0,0,0],
+    lead: [72,0,74,0, 76,0,79,0, 77,0,76,0, 74,0,0,0, 72,0,74,0, 76,0,72,0, 74,0,71,0, 72,0,0,0] };
+  SONGS.battle = { bpm: 158,
+    bass: [45,45,57,45, 43,43,55,43, 41,41,53,41, 43,43,55,43],
+    lead: [69,0,72,0, 76,0,74,0, 72,0,71,0, 72,0,0,0, 67,0,71,0, 74,0,72,0, 71,0,69,0, 71,0,0,0] };
+  let cur = null;
+  const _sm = startMusic, _stop = stopMusic;
+  startMusic = function (name) { cur = name; return _sm.call(this, name); };
+  stopMusic = function () { cur = null; return _stop.call(this); };
+  const music = name => { if (cur !== name) startMusic(name); };
+
+  // ---------- 戦闘背景(ドット絵を描く) ----------
+  function bgCanvas(kind) {
+    const W = 96, H = 64, c = document.createElement('canvas'); c.width = W; c.height = H; c.className = 'bgpix';
+    const g = c.getContext('2d'); const R = (x, y, w, h, col) => { g.fillStyle = col; g.fillRect(x, y, w, h); };
+    const bands = (cols, y0, y1) => { const n = cols.length, h = (y1 - y0) / n; cols.forEach((col, i) => R(0, Math.floor(y0 + i * h), W, Math.ceil(h) + 1, col)); };
+    const seed = { s: 7 }; const r = () => (seed.s = (seed.s * 9301 + 49297) % 233280) / 233280;
+    if (kind === 'meadow') {
+      bands(['#5aa8ff', '#6ab4ff', '#7cc0ff', '#94ceff', '#b0dcff'], 0, 38);
+      [[14, 8], [60, 5], [80, 12]].forEach(([x, y]) => { R(x, y, 12, 3, '#fff'); R(x + 3, y - 2, 6, 2, '#fff'); });
+      g.fillStyle = '#7ac46a'; g.beginPath(); g.moveTo(0, 40); for (let x = 0; x <= W; x += 8) g.lineTo(x, 34 + Math.sin(x / 13) * 4); g.lineTo(W, 64); g.lineTo(0, 64); g.fill();
+      bands(['#5cb04a', '#52a242', '#48943a', '#3e8632'], 42, 64);
+      for (let i = 0; i < 26; i++) R(Math.floor(r() * W), 44 + Math.floor(r() * 20), 1, 1, ['#fff', '#ffd84a', '#ff8fc0'][i % 3]);
+    } else if (kind === 'forest') {
+      bands(['#1e3a2a', '#24462e', '#2c5434', '#33603a'], 0, 40);
+      for (let i = 0; i < 9; i++) { const x = Math.floor(r() * W), h = 22 + Math.floor(r() * 14); R(x + 4, 40 - h + 10, 3, h, '#3a2614'); g.fillStyle = ['#1a4a26', '#225a2e', '#2a6a36'][i % 3]; g.beginPath(); g.moveTo(x + 5, 40 - h); g.lineTo(x - 4, 40 - h + 16); g.lineTo(x + 14, 40 - h + 16); g.fill(); g.beginPath(); g.moveTo(x + 5, 40 - h + 6); g.lineTo(x - 6, 40 - h + 24); g.lineTo(x + 16, 40 - h + 24); g.fill(); }
+      g.fillStyle = 'rgba(255,240,170,.12)'; g.beginPath(); g.moveTo(40, 0); g.lineTo(52, 0); g.lineTo(70, 64); g.lineTo(46, 64); g.fill();
+      bands(['#2f4a1e', '#294018', '#223614', '#1c2c10'], 42, 64);
+    } else if (kind === 'cave') {
+      bands(['#141018', '#1c1620', '#241c28', '#2c2230'], 0, 42);
+      for (let x = 0; x < W; x += 6) { const h = 3 + Math.floor(r() * 9); g.fillStyle = '#3a3040'; g.beginPath(); g.moveTo(x, 0); g.lineTo(x + 6, 0); g.lineTo(x + 3, h); g.fill(); }
+      [[10, 20], [84, 22]].forEach(([x, y]) => { R(x, y, 2, 8, '#5a3a20'); R(x - 1, y - 3, 4, 3, '#ffb030'); R(x, y - 5, 2, 2, '#fff2a0'); g.fillStyle = 'rgba(255,170,60,.12)'; g.beginPath(); g.arc(x + 1, y - 2, 14, 0, 7); g.fill(); });
+      bands(['#3a3040', '#322838', '#2a2230', '#221a28'], 42, 64);
+      for (let i = 0; i < 12; i++) R(Math.floor(r() * W), 44 + Math.floor(r() * 18), 3, 2, '#4a3e52');
+    } else if (kind === 'grave') {
+      bands(['#1a1030', '#22163c', '#2a1c48', '#342256'], 0, 40);
+      R(70, 6, 9, 9, '#e8e0ff'); R(73, 6, 6, 7, '#22163c');
+      for (let i = 0; i < 18; i++) R(Math.floor(r() * W), Math.floor(r() * 30), 1, 1, '#fff');
+      bands(['#2a2a3a', '#242432', '#1e1e2a', '#181822'], 42, 64);
+      [[12, 36], [30, 40], [56, 37], [80, 41]].forEach(([x, y]) => { R(x, y, 8, 10, '#6a6a7a'); R(x + 1, y - 2, 6, 2, '#6a6a7a'); R(x + 3, y + 2, 2, 5, '#4a4a5a'); R(x + 1, y + 3, 6, 1, '#4a4a5a'); });
+      g.fillStyle = 'rgba(160,140,220,.15)'; g.fillRect(0, 44, W, 6);
+    } else if (kind === 'volcano') {
+      bands(['#2a0606', '#3e0a08', '#5a120a', '#7a1e0c', '#a0300e'], 0, 40);
+      g.fillStyle = '#1a0a08'; g.beginPath(); g.moveTo(20, 40); g.lineTo(42, 12); g.lineTo(54, 12); g.lineTo(76, 40); g.fill(); R(44, 10, 8, 3, '#ff6a1a');
+      for (let i = 0; i < 14; i++) R(Math.floor(r() * W), Math.floor(r() * 36), 1, 1, '#ffb060');
+      bands(['#2a1410', '#22100c', '#1a0c0a', '#140808'], 42, 64);
+      for (let i = 0; i < 5; i++) R(Math.floor(r() * 80), 48 + Math.floor(r() * 14), 14, 2, '#ff5a1a');
+    } else if (kind === 'castle') {
+      bands(['#1a0408', '#22060c', '#2a0810', '#320a14'], 0, 42);
+      for (let x = 6; x < W; x += 22) { R(x, 4, 8, 38, '#3a1018'); R(x - 1, 4, 10, 3, '#4a1420'); R(x - 1, 38, 10, 4, '#4a1420'); R(x + 9, 16, 3, 4, '#ff7a20'); R(x + 10, 13, 1, 3, '#ffd84a'); }
+      bands(['#2a0a10', '#220810', '#1a060c', '#140408'], 42, 64);
+      g.fillStyle = '#7a0c1a'; g.beginPath(); g.moveTo(40, 42); g.lineTo(56, 42); g.lineTo(76, 64); g.lineTo(20, 64); g.fill();
+      R(44, 42, 8, 22, 'rgba(255,216,74,.15)');
+    }
+    return c;
+  }
+  function bgKind(e) { if (e.boss === 'king') return 'castle'; if (e.rare) return null; const d = (MONS[e.type] || [0, .5])[1]; return d < .2 ? 'meadow' : d < .45 ? 'forest' : d < .7 ? 'cave' : d < .9 ? 'grave' : 'volcano'; }
+
+  // ---------- エンカウントの画面切り替え ----------
+  const enc = document.createElement('canvas'); enc.id = 'encCv'; document.body.appendChild(enc); const ex = enc.getContext('2d');
+  function encounter(color) {
+    return new Promise(res => {
+      const D = Math.min(2, devicePixelRatio || 1), W = innerWidth, H = innerHeight; enc.width = W * D; enc.height = H * D;
+      const t0 = performance.now(), dur = 820, mid = .48; let half = false; const shards = 14; const R = Math.hypot(W, H);
+      tone(mf(84), .08, { vol: .08 }); tone(mf(79), .08, { vol: .08, at: now() + .07 }); noise(.5, { type: 'bandpass', freq: 400, to: 3000, q: 1, vol: .25 });
+      (function fr(t) {
+        const k = Math.min(1, (t - t0) / dur);
+        ex.setTransform(D, 0, 0, D, 0, 0); ex.clearRect(0, 0, W, H);
+        if (k < mid) {
+          const q = k / mid, cx = W / 2, cy = H / 2;
+          ex.save(); ex.translate(cx, cy); ex.rotate(q * 2.4);
+          for (let i = 0; i < shards; i++) { const a0 = i / shards * Math.PI * 2, a1 = a0 + Math.PI * 2 / shards * Math.min(1, q * 1.15); ex.fillStyle = i % 2 ? color : '#000'; ex.beginPath(); ex.moveTo(0, 0); ex.arc(0, 0, R * (.2 + q), a0, a1); ex.fill(); }
+          ex.restore();
+          ex.fillStyle = `rgba(255,255,255,${Math.max(0, .5 - q * 2)})`; ex.fillRect(0, 0, W, H);
+        } else {
+          if (!half) { half = true; res(); }
+          const q = (k - mid) / (1 - mid);
+          ex.fillStyle = `rgba(0,0,0,${1 - q})`; ex.fillRect(0, 0, W, H);
+          const cx = W / 2, cy = H / 2; ex.strokeStyle = `rgba(255,255,255,${1 - q})`; ex.lineWidth = 3; ex.beginPath(); ex.arc(cx, cy, q * R * .6, 0, 7); ex.stroke();
+        }
+        if (k < 1) requestAnimationFrame(fr); else ex.clearRect(0, 0, W, H);
+      })(t0);
+    });
+  }
+
+  // ---------- サイドビュー戦闘 ----------
+  function buildParty() {
+    const s = st(); if (!s || !enemy || enemy.boss === 'creator' && false) return;
+    s.classList.add('sv');
+    const p = document.createElement('div'); p.className = 'party-side';
+    if (hero.allies.length) { const al = document.createElement('div'); al.className = 'allies'; hero.allies.forEach((a, i) => { const c = mkCv(SPR[a.type], a.pal, 3); c.dataset.ally = i; al.append(c); }); p.append(al); }
+    const h = document.createElement('div'); h.className = 'svHero'; h.append(heroCv(5)); p.append(h);
+    s.append(p);
+  }
+  const svHero = () => document.querySelector('.svHero canvas');
+  const svAlly = i => document.querySelector(`.party-side canvas[data-ally="${i}"]`);
+  const enemyCv = () => document.querySelector('#eWrap canvas');
+  function lunge(el, dx, dy = -6) { if (!el) return; el.animate([{ transform: 'translate(0,0)' }, { transform: `translate(${dx * .3}px,4px)`, offset: .2 }, { transform: `translate(${dx}px,${dy}px)`, offset: .5 }, { transform: 'translate(0,0)' }], { duration: 360, easing: 'cubic-bezier(.3,.6,.3,1)' }); }
+  function castFx(el, toEl, color) {
+    if (!el) return; const wrap = el.parentNode; if (wrap && getComputedStyle(wrap).position !== 'static') { const m = document.createElement('div'); m.className = 'mcircle'; m.style.borderColor = color; wrap.appendChild(m); setTimeout(() => m.remove(), 600); }
+    const a = F.center(el), b = F.center(toEl); if (!a || !b) return;
+    for (let i = 0; i < 10; i++) F.add({ x: a.x, y: a.y, vx: (b.x - a.x) / .28 + (rnd() - .5) * 40, vy: (b.y - a.y) / .28 + (rnd() - .5) * 40, g: 0, life: .28, s: 5 - i * .3, c: color, shape: 'spark', t: -i * .015 });
+  }
+  function who(kind, atk, def, luk) {
+    if (!enemy) return null;
+    if (kind === 'phys') {
+      if (def === enemy.def) { if (atk === atkOf()) return { side: 'hero' }; const i = hero.allies.findIndex(a => a.atk === atk && a.luk === luk); return i >= 0 ? { side: 'ally', i } : { side: 'hero' }; }
+      return { side: 'enemy' };
+    }
+    if (def === enemy.mdf) { if (atk === magOf()) return { side: 'hero' }; const i = hero.allies.findIndex(a => a.mag === atk); return i >= 0 ? { side: 'ally', i } : { side: 'hero' }; }
+    return { side: 'enemy' };
+  }
+  function animAttack(kind, w) {
+    if (!w || !document.querySelector('.party-side')) return;
+    if (w.side === 'enemy') {
+      const e = enemyCv(), h = svHero();
+      if (kind === 'phys') { lunge(e, -70, 0); setTimeout(() => h && h.animate([{ transform: 'translateX(0)' }, { transform: 'translateX(-8px)' }, { transform: 'translateX(5px)' }, { transform: 'translateX(0)' }], { duration: 260 }), 180); }
+      else castFx(e, h, '#ff6a8a');
+      return;
+    }
+    const el = w.side === 'hero' ? svHero() : svAlly(w.i);
+    if (kind === 'phys') lunge(el, 70); else castFx(el, enemyCv(), '#c9a6ff');
+  }
+  const _phys = physical; physical = function (atk, def, luk) { const r = _phys(atk, def, luk); try { animAttack('phys', who('phys', atk, def, luk)); } catch (e) {} return r; };
+  const _mag = magical; magical = function (mag, mdf) { const r = _mag(mag, mdf); try { animAttack('mag', who('mag', mag, mdf)); } catch (e) {} return r; };
+
+  const _sb = startBattle;
+  startBattle = function (...a) {
+    const e = enemy;
+    const after = () => {
+      try {
+        const k = bgKind(e), s = st();
+        if (k && s) s.insertBefore(bgCanvas(k), s.firstChild);
+        buildParty();
+        if (!e.boss) music('battle');
+      } catch (err) { console.error(err); }
+    };
+    if (e.boss === 'creator') { _sb.apply(this, a); after(); return; }
+    const col = e.boss === 'king' ? '#a00018' : e.rare ? (e.rare.tc || '#5a2a9a') : '#2a3a9a';
+    encounter(col).then(() => { _sb.apply(this, a); after(); });
+  };
+
+  // ---------- 撃破:ドットが砕け散る ----------
+  function shatter(cv, big) {
+    if (!cv) return; const r = cv.getBoundingClientRect(); if (!r.width) return;
+    let d; try { d = cv.getContext('2d').getImageData(0, 0, cv.width, cv.height).data; } catch (e) { return; }
+    const sc = cv.width / 16, px = r.width / 16, cx = r.left + r.width / 2, cy = r.top + r.height / 2;
+    for (let y = 0; y < 16; y++) for (let x = 0; x < 16; x++) {
+      const i = ((Math.floor(y * sc + sc / 2)) * cv.width + Math.floor(x * sc + sc / 2)) * 4; if (d[i + 3] < 10) continue;
+      const X = r.left + x * px + px / 2, Y = r.top + y * px + px / 2, a = Math.atan2(Y - cy, X - cx), sp = (big ? 90 : 60) + rnd() * (big ? 240 : 160);
+      F.add({ x: X, y: Y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp - 80, g: 420, life: (big ? 1.6 : 1) * (.6 + rnd() * .6), s: px * .95, c: `rgb(${d[i]},${d[i + 1]},${d[i + 2]})`, shape: 'spark', vr: (rnd() - .5) * 8, t: big ? -rnd() * .3 : 0 });
+    }
+    cv.style.visibility = 'hidden';
+    if (big) { F.flashScreen(.9, 700); F.kick(12); [0, 180, 380, 620].forEach((ms, i) => setTimeout(() => { F.burst(st(), { n: 30, c: ['#fff', '#ffd84a', '#ff6a2a'], sp: 260, s: 4, spread: .5 }); F.kick(8 - i); noise(.4, { freq: 300, vol: .5 }); }, ms)); }
+    else noise(.25, { type: 'bandpass', freq: 1800, to: 400, vol: .25 });
+  }
+  const _vic = victory; victory = async function (...a) { try { shatter(enemyCv(), !!enemy.boss); } catch (e) {} return _vic.apply(this, a); };
+
+  // ---------- ダメージ数字:桁で大きく ----------
+  const _pop2 = popup; popup = function (text, cls = '') {
+    const r = _pop2.call(this, text, cls); const p = document.querySelector('#stage .pop:last-of-type');
+    const n = Number(text) || 0, dg = String(Math.floor(n)).length;
+    if (p) { const base = cls.includes('crit') ? 40 : 30; p.style.fontSize = Math.round(base * (.75 + dg * .12)) + 'px'; if (n >= 10000) { p.classList.add('huge'); F.kick(12); F.flashScreen(.4, 300, '#ffd0a0'); } else if (n >= 1000) F.kick(5); }
+    return r;
+  };
+
+  // ---------- 誕生:スロット ----------
+  window.slotReveal = async function (final) {
+    const s = st(); s.className = 'win'; s.style.background = ''; s.innerHTML = '';
+    const wrapEl = document.createElement('div'); wrapEl.className = 'center';
+    wrapEl.innerHTML = `<div class="slotTitle">― 才能ガチャ ―</div><div class="slot">${KEYS.map(k => `<div class="reel spin" data-k="${k}"><div class="lb">${LABEL[k]}</div><div class="num">0</div></div>`).join('')}</div><div class="slotRank" id="slotRank"></div>`;
+    s.append(wrapEl);
+    const stopped = {}; const quick = fast;
+    let tick = setInterval(() => {
+      KEYS.forEach(k => { if (stopped[k] == null) { const v = rollStat(); hero.base[k] = v; const el = s.querySelector(`.reel[data-k="${k}"] .num`); if (el) el.textContent = v; } });
+      hero.maxhp = hero.hp = hero.base.hp; renderHero(); SFX.tick();
+    }, 55);
+    await sleep2(quick ? 250 : 650);
+    for (const k of KEYS) {
+      stopped[k] = final[k]; hero.base[k] = final[k];
+      const reel = s.querySelector(`.reel[data-k="${k}"]`); reel.classList.remove('spin'); reel.querySelector('.num').textContent = final[k];
+      void reel.offsetWidth; reel.classList.add('stop');
+      tone(140, .12, { type: 'square', to: 70, vol: .2 }); noise(.05, { freq: 2000, vol: .2 });
+      if (final[k] > CFG.giftLine) {
+        reel.classList.add('gift'); reel.insertAdjacentHTML('beforeend', '<span class="stamp">才能</span>');
+        const t = now(); [76, 81, 88].forEach((m, i) => tone(mf(m), .18, { type: 'triangle', vol: .12, at: t + i * .05 }));
+        F.burst(reel, { n: 16, c: ['#ffd84a', '#fff6b0'], sp: 140, shape: 'star', life: .7 });
+      }
+      await sleep2(quick ? 140 : 380);
+    }
+    clearInterval(tick);
+    const gifts = KEYS.filter(k => final[k] > CFG.giftLine).length;
+    const box = s.querySelector('.slot');
+    if (gifts === 0) { F.burst(box, { n: 26, c: ['#777', '#999', '#555'], sp: 50, g: -40, s: 7, life: 1.2, spread: .8 }); noise(.5, { freq: 500, to: 150, vol: .3 }); }
+    else if (gifts === 1) { F.burst(box, { n: 20, c: ['#fff6b0', '#fff'], sp: 120, shape: 'star' }); }
+    else if (gifts === 2) { F.burst(box, { n: 36, c: ['#ffd84a', '#fff6b0', '#fff'], sp: 200, shape: 'star', s: 4 }); F.ring(box, '#ffd84a', 120); }
+    else if (gifts === 3) { F.flashScreen(.35, 400, '#fff6b0'); F.burst(box, { n: 50, c: ['#ffd84a', '#fff6b0', '#fff', '#ff9a2a'], sp: 260, shape: 'star', s: 4 }); F.ring(box, '#ffd84a', 160); F.kick(6); }
+    else {
+      wrapEl.classList.add('tier4'); F.flashScreen(.7, 700, '#fff');
+      const cols = ['#ff5a5a', '#ffd84a', '#6dff8a', '#7fc8ff', '#d9b3ff', '#ff8fc0'];
+      for (let i = 0; i < 5; i++) setTimeout(() => { const r = box.getBoundingClientRect(); const fake = { getBoundingClientRect: () => ({ left: r.left + rnd() * r.width - 20, top: r.top - 40 + rnd() * 80, width: 40, height: 40 }) }; F.burst(fake, { n: 40, c: cols, sp: 240, shape: 'star', s: 3.5, g: 160, life: 1.2 }); noise(.3, { type: 'highpass', freq: 3000, vol: .2 }); tone(mf(84 + i * 2), .2, { type: 'triangle', vol: .1 }); }, i * 220);
+      F.kick(10);
+    }
+  };
+
+  // ---------- 宝箱:フタが開く ----------
+  window.mkChest = function (scale) {
+    const rows = SPR.box, lidRows = rows.map((r, i) => i <= 5 ? r : '................'), bodyRows = rows.map((r, i) => i > 5 ? r : '................');
+    const d = document.createElement('div'); d.className = 'chest'; d.style.width = d.style.height = (16 * scale) + 'px';
+    const beam = document.createElement('div'); beam.className = 'beam';
+    const body = mkCv(bodyRows, PAL.box, scale), lid = mkCv(lidRows, PAL.box, scale); lid.classList.add('lid');
+    d.append(beam, body, lid); return d;
+  };
+  window.openLid = async function (card, rare) {
+    const c = card.querySelector('.chest'); if (!c) return;
+    if (rare) c.classList.add('rainbow');
+    c.classList.add('open'); noise(.2, { type: 'bandpass', freq: 800, vol: .25 }); tone(mf(rare ? 88 : 79), .3, { type: 'triangle', vol: .12 });
+    F.burst(c, { n: rare ? 30 : 16, c: rare ? ['#ff5a5a', '#ffd84a', '#6dff8a', '#7fc8ff', '#d9b3ff'] : ['#fff6b0', '#ffd84a'], sp: 120, g: -120, shape: 'star', life: .9 });
+    await sleep2(520);
+  };
+
+  // ---------- 画面ごとのBGM ----------
+  const _t2 = title; title = function (...a) { const r = _t2.apply(this, a); music('field'); return r; };
+  const _dv = deckView; deckView = function (...a) { const r = _dv.apply(this, a); music('field'); return r; };
+  music('field');
 })();
 </script>
 </body>
