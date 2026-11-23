@@ -112,6 +112,14 @@ button{font-family:inherit;color:inherit;border:none;background:none;cursor:poin
 #strip{position:relative;height:30px;margin-top:6px;border-radius:8px;background:rgba(0,0,0,.45);overflow:hidden}
 #strip i{position:absolute;top:5px;width:20px;height:20px;border-radius:5px;font-style:normal;font-family:'Dela Gothic One';font-size:11px;display:flex;align-items:center;justify-content:center;transform:translateX(-50%);box-shadow:0 1px 3px rgba(0,0,0,.6);transition:left .2s linear}
 #strip i.me{box-shadow:0 0 0 2px #ff8a1a,0 0 10px #ffb84a;z-index:2}
+#myt{display:flex;flex-wrap:wrap;gap:5px;margin-top:6px}
+.mt{display:flex;align-items:center;gap:5px;padding:4px 9px 4px 5px;border-radius:10px;background:rgba(0,0,0,.66);box-shadow:inset 0 0 0 2px #ff8a1a;font-weight:900;font-size:12px;text-shadow:0 1px 2px #000;transition:box-shadow .2s,background .2s}
+.mt .tp{font-size:10px;color:#ffcf9a}
+.mt .nb{display:inline-flex;width:22px;height:22px;border-radius:5px;align-items:center;justify-content:center;font-family:'Dela Gothic One';font-size:13px;text-shadow:none;box-shadow:0 0 0 1px rgba(0,0,0,.4)}
+.mt .rk{font-family:'Dela Gothic One';font-size:13px;color:#fff}
+.mt .st{font-size:10px;padding:1px 6px;border-radius:999px;background:#444;color:#ccc}
+.mt.hit{background:rgba(10,70,30,.85);box-shadow:inset 0 0 0 2px #4aff8a,0 0 14px rgba(74,255,138,.6)}
+.mt.hit .st{background:#2ac05a;color:#fff}
 #comm{position:absolute;left:8px;right:8px;bottom:84px;pointer-events:none}
 #comm .bx{background:linear-gradient(90deg,rgba(0,0,0,.82),rgba(0,0,0,.6));border-left:5px solid #ffd54a;border-radius:10px;padding:8px 12px;font-weight:900;font-size:16px;line-height:1.45;text-shadow:0 1px 2px #000;min-height:52px;transition:transform .15s}
 #comm .bx.hot{border-color:#ff4a3a;font-size:19px;transform:scale(1.03)}
@@ -178,7 +186,7 @@ button{font-family:inherit;color:inherit;border:none;background:none;cursor:poin
   </div>
  </div>
  <div class="scr" id="race"><canvas id="rcv"></canvas>
-  <div id="rtop"><div class="r1"><span class="rn" id="rName"></span><span class="rem" id="rRem"></span></div><div id="strip"></div></div>
+  <div id="rtop"><div class="r1"><span class="rn" id="rName"></span><span class="rem" id="rRem"></span></div><div id="strip"></div><div id="myt"></div></div>
   <div id="bigtxt"></div>
   <div id="photo"><b>写真判定</b><small>ハナ差の大接戦…!</small></div>
   <div id="comm"><div class="bx"><div class="who">実況</div><div id="cTxt"></div></div></div>
@@ -445,6 +453,10 @@ function startRace(){closeSheet();ON.raceStart();const spent=tickets.reduce((a,t
   buildStrip();say('',0);
   Sound.ambience('race');Sound.fanfare(R.isG1);
   setTimeout(()=>say(`${R.name}、芝${R.D}メートル。${R.n}頭がゲートに収まります。`,1),R.isG1?3800:1400)}
+let mytT=0;
+function myTix(ord){if(!tickets.length){$('#myt').innerHTML='';return}if((mytT-=1/60)>0)return;mytT=.2;const hs=R.hs,n3=Math.min(3,R.n);const rk=i=>ord.indexOf(i)+1;const nb=i=>`<span class="nb" style="background:${hs[i].frame[0]};color:${hs[i].frame[1]}">${hs[i].num}</span>`;
+  $('#myt').innerHTML=tickets.map(t=>{let hit,info;if(t.type==='win'){hit=rk(t.sel[0])===1;info=`<span class="rk">${rk(t.sel[0])}位</span>`}else if(t.type==='plc'){hit=rk(t.sel[0])<=n3;info=`<span class="rk">${rk(t.sel[0])}位</span>`}else{hit=t.sel.every(i=>rk(i)<=2);info=`<span class="rk">${rk(t.sel[0])}位・${rk(t.sel[1])}位</span>`}
+    const tp={win:'単勝',plc:'複勝',qui:'馬連'}[t.type];return`<div class="mt ${hit?'hit':''}"><span class="tp">${tp}</span>${t.sel.map(nb).join('')}${info}<span class="st">${hit?'当たり圏内!':'圏外'}</span></div>`}).join('')}
 function buildStrip(){$('#strip').innerHTML=R.hs.map(h=>`<i class="${RS.mine.has(h.i)?'me':''}" style="background:${h.frame[0]};color:${h.frame[1]}">${h.num}</i>`).join('')}
 function frameAt(t){const fr=RS.fr;if(t<=0)return{x:fr[0].x.map(()=>0),l:fr[0].l.map((_,i)=>i*.9)};const k=t/.2;const i=Math.min(fr.length-2,Math.floor(k)),q=clamp(k-i,0,1);const A=fr[i],B=fr[i+1]||A;return{x:A.x.map((v,j)=>lerp(v,B.x[j],q)),l:A.l.map((v,j)=>lerp(v,B.l[j],q))}}
 function raceTick(dt){if(!RS)return;const D=R.D;
@@ -459,7 +471,7 @@ function raceTick(dt){if(!RS)return;const D=R.D;
   $('#rRem').textContent=RS.t<0?'':rem>0?'残り '+Math.max(0,Math.ceil(rem/10)*10)+'m':'ゴール';
   const minX=Math.min(...cur.x),span=Math.max(1,lead-minX);$$('#strip i').forEach((el,i)=>{el.style.left=(6+90*(cur.x[i]-minX)/Math.max(30,span))+'%'});
   if(rem<D*.27&&rem>-5&&RS.mine.size){$('#cheer').style.display='block'}else $('#cheer').style.display='none';
-  RS.hot=RS.t>0?clamp(1-(rem-0)/(D*.28),0,1):0;if(rem<-8)RS.hot=Math.max(0,RS.hot-dt*.8);Sound.raceMix(RS,rem);Tension.tick(RS,rem);
+  RS.hot=RS.t>0?clamp(1-(rem-0)/(D*.28),0,1):0;if(rem<-8)RS.hot=Math.max(0,RS.hot-dt*.8);myTix(ord);Sound.raceMix(RS,rem);Tension.tick(RS,rem);
   if(RS.t>RS.finT+3.2&&!RS.done){RS.done=true;setTimeout(()=>showResult(),RS.photo?2600:900);if(RS.photo){$('#photo').classList.add('on');Sound.heart()}}
   drawRace(cur,lead,rem,dt)}
 function commentary(cur,lead,rem){const F=RS.fired,D=R.D,hs=R.hs,ord=RS.ord;const nm=i=>hs[i].nm,nb=i=>hs[i].num+'番';const f=lead/D;
@@ -529,8 +541,10 @@ function drawRace(cur,lead,rem,dt){const c=rc,W=RW,H=RH;c.setTransform(DPR,0,0,D
   const list=R.hs.map(h=>h.i).sort((a,b)=>cur.l[a]-cur.l[b]);const tt=RS.t;
   for(const i of list){const h=R.hs[i];const px=sx(cur.x[i]);if(px<-80||px>W+80)continue;const ly=laneY(cur.l[i]),s=laneS(cur.l[i])*clamp(Z/15,.85,1.5);
     const v=RS.t>0?1:0;const gph=RS.t>0?(cur.x[i]/6.4):RS.t*.2;
-    {const os=ON.others[i];if(os){c.font="900 10px 'Zen Maru Gothic',sans-serif";c.textAlign='center';os.forEach((o,k)=>{const ty=ly-118*s*.78*1.25-(RS.mine.has(i)?16:0)-k*14;const w=c.measureText(o.name).width+8;c.fillStyle=o.col;c.fillRect(px-w/2,ty-10,w,13);c.fillStyle='#fff';c.fillText(o.name,px,ty)})}}
-    if(RS.mine.has(i)){c.fillStyle='#ff8a1a';c.beginPath();const ay=ly-118*s*.78*1.25+Math.sin(tt*6)*3;c.moveTo(px,ay+12);c.lineTo(px-8,ay);c.lineTo(px+8,ay);c.fill()}
+    {const os=ON.others[i];if(os){c.font="900 10px 'Zen Maru Gothic',sans-serif";c.textAlign='center';os.forEach((o,k)=>{const ty=ly-140*s*.78-(RS.mine.has(i)?26:4)-k*14;const w=c.measureText(o.name).width+8;c.fillStyle=o.col;c.fillRect(px-w/2,ty-10,w,13);c.fillStyle='#fff';c.fillText(o.name,px,ty)})}}
+    if(RS.mine.has(i)){const ss=s*.78;c.save();c.globalAlpha=.55+.25*Math.sin(tt*8);const sg=c.createRadialGradient(px+4*ss,ly,2,px+4*ss,ly,62*ss);sg.addColorStop(0,'rgba(255,170,40,.95)');sg.addColorStop(1,'rgba(255,140,20,0)');c.fillStyle=sg;c.beginPath();c.ellipse(px+4*ss,ly,62*ss,12*ss,0,0,7);c.fill();c.restore();
+      const ay=ly-140*ss+Math.sin(tt*6)*4;c.fillStyle='#ff8a1a';c.strokeStyle='#fff';c.lineWidth=2.5;c.beginPath();c.moveTo(px,ay+16);c.lineTo(px-11,ay);c.lineTo(px+11,ay);c.closePath();c.fill();c.stroke();
+      c.font="900 12px 'Zen Maru Gothic',sans-serif";c.textAlign='center';const lab=h.num+'番 あなたの馬';const lw=c.measureText(lab).width+12;c.fillStyle='#ff8a1a';c.fillRect(px-lw/2,ay-19,lw,17);c.strokeRect(px-lw/2,ay-19,lw,17);c.fillStyle='#fff';c.fillText(lab,px,ay-6.5)}
     if(rem<D*.25&&v){c.strokeStyle='rgba(255,255,255,.25)';c.lineWidth=1.5;for(let k=0;k<3;k++){const yy=ly-(30+k*18)*s;c.beginPath();c.moveTo(px-50*s,yy);c.lineTo(px-(50+30+rnd()*20)*s,yy);c.stroke()}}
     // 芝の土煙
     if(v&&rnd()<.5)dusts.push({x:cur.x[i]-1.2,l:cur.l[i],y:0,vy:-(8+rnd()*12),life:0,r:2+rnd()*2});
@@ -551,7 +565,7 @@ function drawRace(cur,lead,rem,dt){const c=rc,W=RW,H=RH;c.setTransform(DPR,0,0,D
     for(let i=0;i<Math.floor(8*k);i++){c.fillStyle=`rgba(60,120,40,${.5*k})`;const yy=H*(.55+rnd()*.4);c.fillRect(rnd()*W,yy,30+rnd()*70,1.6)}
     const beat=Tension.pulse;const rg=c.createRadialGradient(W/2,H/2,H*.25,W/2,H/2,H*.75);rg.addColorStop(0,'rgba(0,0,0,0)');rg.addColorStop(1,`rgba(${Math.round(120+100*beat)},0,0,${(.18+.22*beat)*k})`);c.fillStyle=rg;c.fillRect(0,0,W,H);
     const lb=H*.065*Math.min(1,k*1.6);c.fillStyle='#000';c.fillRect(0,0,W,lb);c.fillRect(0,H-lb,W,lb);
-    if(rem>0&&rem<D*.28){const big=Math.max(0,Math.ceil(rem/10)*10);c.save();c.textAlign='center';const sc=1+beat*.08;c.translate(W/2,H*.215);c.scale(sc,sc);c.font=`900 ${rem<210?54:40}px 'Dela Gothic One',sans-serif`;c.lineWidth=7;c.strokeStyle='rgba(0,0,0,.75)';c.strokeText(big+'m',0,0);c.fillStyle=rem<210?'#ff5a3a':'#ffe08a';c.fillText(big+'m',0,0);c.restore()}
+    if(rem>0&&rem<D*.28){const big=Math.max(0,Math.ceil(rem/10)*10);c.save();c.textAlign='center';const sc=1+beat*.08;c.translate(W/2,H*.31);c.scale(sc,sc);c.font=`900 ${rem<210?54:40}px 'Dela Gothic One',sans-serif`;c.lineWidth=7;c.strokeStyle='rgba(0,0,0,.75)';c.strokeText(big+'m',0,0);c.fillStyle=rem<210?'#ff5a3a':'#ffe08a';c.fillText(big+'m',0,0);c.restore()}
     if(rnd()<.35*k)RS.shakeA=Math.max(RS.shakeA,1.6*k)}
   // 写真判定:白黒
   if(RS.photo&&RS.t>RS.finT-.05&&RS.t<RS.finT+3.4){const img=c.getImageData(0,0,rcv.width,rcv.height);const d=img.data;for(let k=0;k<d.length;k+=4){const g=d[k]*.3+d[k+1]*.59+d[k+2]*.11;d[k]=d[k+1]=d[k+2]=g}c.putImageData(img,0,0);c.setTransform(DPR,0,0,DPR,0,0);c.strokeStyle='#ff2a1a';c.lineWidth=2;c.setLineDash([6,4]);const gx=sx(R.D);c.beginPath();c.moveTo(gx,H*.3);c.lineTo(gx,H);c.stroke();c.setLineDash([])}
