@@ -170,7 +170,7 @@ button{font-family:inherit;color:inherit;border:none;background:none;cursor:poin
 <div id="app">
  <div class="scr on" id="title"><canvas id="tcv"></canvas>
   <div class="logo"><h1>疾風<br><span>ターフ</span></h1><p>読め。賭けろ。叫べ。</p></div>
-  <div class="tmenu"><button class="btn" id="tPlay">競馬場へ行く</button><button class="btn" id="tOnline" style="background:linear-gradient(#7ad0ff,#2a8ae0);color:#03203a;box-shadow:0 5px 0 #0a3a6a,inset 0 1px 0 rgba(255,255,255,.5)">みんなで対戦</button><button class="btn sub" id="tHelp">あそびかた</button><div class="rec" id="tRec"></div></div>
+  <div class="tmenu"><button class="btn" id="tPlay">競馬場へ行く</button><button class="btn" id="tOnline" style="background:linear-gradient(#7ad0ff,#2a8ae0);color:#03203a;box-shadow:0 5px 0 #0a3a6a,inset 0 1px 0 rgba(255,255,255,.5)">みんなで対戦</button><button class="btn sub" id="tHelp">あそびかた</button><div class="rec" id="tRec"></div><div class="rec" style="opacity:.6;font-size:10px">ver 1.3</div></div>
  </div>
  <div class="scr" id="card">
   <div class="hdr"><div class="r1"><span class="grade" id="cGrade"></span><span class="rname" id="cName"></span><span class="money" id="cMoney"></span></div>
@@ -688,33 +688,33 @@ function localTransport(code,onMsg,onPres,meta0){const bc=new BroadcastChannel('
   const iv=setInterval(()=>{pres();pub()},800);pres();setTimeout(pub,50);
   return Promise.resolve({send:m=>bc.postMessage(m),track:x=>{meta=x;pres();pub()},close:()=>{clearInterval(iv);try{bc.postMessage({__bye:1,cid:meta.cid});bc.close()}catch(e){}}})}
 const BET_SEC=75;
-const ON={on:false,tp:null,cid:'c'+Math.random().toString(36).slice(2,10),code:null,host:false,meta:null,mem:{},hostSeen:false,round:0,total:5,phase:'lobby',deadline:0,others:{},ready:false,saved:null,timer:null,goSent:false,
+const ON={net:'',hb:null,on:false,tp:null,cid:'c'+Math.random().toString(36).slice(2,10),code:null,host:false,meta:null,mem:{},hostSeen:false,round:0,total:5,phase:'lobby',deadline:0,others:{},ready:false,saved:null,timer:null,goSent:false,
   me(){return this.mem[this.cid]||this.meta},
   list(){return Object.values(this.mem).sort((a,b)=>a.at-b.at||(a.cid<b.cid?-1:1))},
   col(cid){const L=this.list();const i=L.findIndex(m=>m.cid===cid);return PCOL[(i<0?0:i)%PCOL.length]},
-  async connect(code,name,host){this.leave(true);this.code=code;this.host=host;this.mem={};this.hostSeen=false;this.on=true;this.saved={money:S.money,no:S.no};S.money=10000;
+  async connect(code,name,host){this.leave(true);this.net='通信の準備中…';this.code=code;this.host=host;this.mem={};this.hostSeen=false;this.on=true;this.saved={money:S.money,no:S.no};S.money=10000;
     this.meta={cid:this.cid,name,host,at:Date.now(),money:10000,ready:false,tix:[],st:'lobby'};
     const onMsg=m=>{try{this.onMsg(m)}catch(e){showErr(e)}},onPres=m=>{try{this.onPres(m)}catch(e){showErr(e)}};
-    try{if(urlQ.get('net')==='local')this.tp=await localTransport(code,onMsg,onPres,this.meta);else{await loadSupa();this.tp=await supaTransport(code,onMsg,onPres,this.meta)}}
+    try{if(urlQ.get('net')==='local')this.tp=await localTransport(code,onMsg,onPres,this.meta);else{await loadSupa();this.net='部屋に接続中…';this.tp=await supaTransport(code,onMsg,onPres,this.meta)}this.net='接続OK';}
     catch(e){this.leave(true);throw new Error((e.message||e)+'\nclaude.aiの画面ではオンライン対戦ができません。GitHub Pages版のURLから開いてください')}
-    if(!host)this.send({t:'hello'})},
-  leave(silent){if(this.tp){try{this.tp.close()}catch(e){}}this.tp=null;clearInterval(this.timer);if(this.on&&this.saved){S.money=this.saved.money;S.no=this.saved.no}this.on=false;this.saved=null;this.others={};this.mem={};this.phase='lobby'},
+    if(!host){this.send({t:'hello'});let n=0;clearInterval(this.hb);this.hb=setInterval(()=>{if(!this.on||this.hostSeen){clearInterval(this.hb);return}n++;this.send({t:'hello'});if(n>=6){this.net='ホストが見つかりません。合言葉が合っているか、ホストが部屋を開いたままか確認してください';if(cur==='lobby')this.lobbyUI()}},2500)}else{clearInterval(this.hb);this.hb=setInterval(()=>{if(!this.on){clearInterval(this.hb);return}if(this.phase==='lobby')this.send({t:'cfg',total:this.total,host:1})},3000)}},
+  leave(silent){if(this.tp){try{this.tp.close()}catch(e){}}this.tp=null;clearInterval(this.timer);clearInterval(this.hb);if(this.on&&this.saved){S.money=this.saved.money;S.no=this.saved.no}this.on=false;this.saved=null;this.others={};this.mem={};this.phase='lobby'},
   send(m){m.from=this.cid;try{this.tp&&this.tp.send(m)}catch(e){}},
   setMeta(x){if(!this.tp)return;this.meta=Object.assign({},this.meta,x);try{this.tp.track(this.meta)}catch(e){}if(this.mem[this.cid])this.mem[this.cid]=this.meta},
-  onMsg(m){if(!m||m.from===this.cid)return;
+  onMsg(m){if(!m||m.from===this.cid)return;if(m.t==='cfg'||m.t==='race'){if(!this.hostSeen){this.hostSeen=true;this.net='接続OK'}}
     if(m.t==='race')this.gotRace(m);
     else if(m.t==='go'){if(this.phase==='card')startRace()}
     else if(m.t==='cheer'){if(cur==='race'){popText((m.name||'')+'「'+m.txt+'」',this.col(m.from));Sound.cheer()}}
     else if(m.t==='hello'){if(this.host){if(this.phase==='card'&&R)this.send({t:'race',R,round:this.round,total:this.total,left:Math.max(5,Math.round((this.deadline-Date.now())/1000))});else this.send({t:'cfg',total:this.total,round:this.round})}}
     else if(m.t==='cfg'){this.total=m.total;if(cur==='lobby')this.lobbyUI()}
     else if(m.t==='lobby'){this.backToLobby()}},
-  onPres(mem){this.mem=mem;const hostIn=Object.values(mem).some(x=>x.host);if(hostIn)this.hostSeen=true;
-    if(!this.host&&this.hostSeen&&!hostIn){toast('ホストが部屋を出ました');this.leave();toTitle();return}
+  onPres(mem){this.mem=mem;const hostIn=Object.values(mem).some(x=>x.host);if(hostIn&&!this.hostSeen){this.hostSeen=true;this.net='接続OK'}
+    if(!this.host&&this.hostSeen&&!hostIn){clearTimeout(this.goneT);this.goneT=setTimeout(()=>{if(this.on&&!Object.values(this.mem).some(x=>x.host)){toast('ホストが部屋を出ました');this.leave();toTitle()}},6000)}
     if(cur==='lobby')this.lobbyUI();if(cur==='card'){this.barUI();this.checkAllReady()}if(cur==='result')this.boardUI()},
   // ---- ロビー ----
   lobbyUI(){if(cur!=='lobby')scr('lobby');const L=this.list();const el=$('#lobby');
     el.innerHTML=`<div class="lbl">部屋の合言葉</div><div class="code">${this.code}</div><div style="font-size:12px;color:#bfe0c9;text-align:center;line-height:1.6">友達に合言葉を送って「みんなで対戦」→「合言葉で入る」から入ってもらおう</div>
-    <div class="mem">${L.map(m=>`<div class="mb"><span class="dot" style="background:${this.col(m.cid)}"></span>${esc(m.name)}${m.cid===this.cid?' (あなた)':''}${m.host?'<span class="tag">ホスト</span>':''}</div>`).join('')}</div>
+    <div style="font-size:11px;font-weight:900;margin-top:8px;color:${/OK/.test(this.net)?'#7aff9a':'#ffd27a'}">通信:${esc(this.net)}(${L.length}人が接続中)</div><div class="mem">${L.map(m=>`<div class="mb"><span class="dot" style="background:${this.col(m.cid)}"></span>${esc(m.name)}${m.cid===this.cid?' (あなた)':''}${m.host?'<span class="tag">ホスト</span>':''}</div>`).join('')}</div>
     ${this.host?`<div class="lbl" style="align-self:flex-start">レース数</div><div class="seg" style="margin:4px 0 14px">${[3,5,8].map(n=>`<button data-n="${n}" class="${this.total===n?'on':''}">${n}レース</button>`).join('')}</div><div style="font-size:11px;color:#9fc6ac;margin-bottom:8px">全員10,000円からスタート。最後のレースはG1。最後に一番お金を持っていた人の勝ち!</div><button class="btn" style="width:100%" id="lStart" ${L.length<1?'disabled':''}>スタート!(${L.length}人)</button>`:`<div style="font-size:13px;color:#bfe0c9;margin:6px 0 14px">${this.hostSeen?'ホストがスタートするのを待っています…('+this.total+'レース)':'部屋をさがしています…'}</div>`}
     <button class="btn sub" style="width:100%;margin-top:10px" id="lLeave">部屋を出る</button>`;
     $$('#lobby .seg button').forEach(b=>b.onclick=()=>{Sound.tap();this.total=+b.dataset.n;this.send({t:'cfg',total:this.total});this.lobbyUI()});
@@ -772,7 +772,7 @@ function onlineSheet(err){const nm=LS.get('name','');$('#sin').innerHTML=`<h2>�
   const busy=b=>{$('#oCreate').disabled=b;$('#oJoin').disabled=b;$('#oErr').textContent=b?'接続中…':''};
   $('#oCreate').onclick=async()=>{audio();Speech.unlock();busy(true);try{const code=String(1000+Math.floor(Math.random()*9000));await ON.connect(code,nameOf(),true);closeSheet();ON.total=5;ON.lobbyUI()}catch(e){busy(false);$('#oErr').textContent=e.message||String(e)}};
   $('#oJoin').onclick=async()=>{audio();Speech.unlock();const code=($('#oCode').value||'').replace(/\D/g,'');if(code.length!==4){$('#oErr').textContent='合言葉は4桁の数字です';return}busy(true);
-    try{await ON.connect(code,nameOf(),false);closeSheet();ON.lobbyUI();setTimeout(()=>{if(ON.on&&!ON.hostSeen&&cur==='lobby'){ON.leave();toTitle();onlineSheet('部屋が見つかりません。合言葉を確認してください')}},5000)}catch(e){busy(false);$('#oErr').textContent=e.message||String(e)}}}
+    try{await ON.connect(code,nameOf(),false);closeSheet();ON.lobbyUI();}catch(e){busy(false);$('#oErr').textContent=e.message||String(e)}}}
 $('#tOnline').onclick=()=>{audio();Sound.tap();onlineSheet()};
 
 /* ================= タイトル背景 ================= */
