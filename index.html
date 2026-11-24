@@ -8,6 +8,8 @@
 <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700;900&family=Dela+Gothic+One&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body,#app,#app *{touch-action:manipulation}
+input{touch-action:auto}
 html,body{height:100%;background:#0a1410;color:#f2f6ee;font-family:'Zen Maru Gothic',sans-serif;overflow:hidden;user-select:none;-webkit-user-select:none}
 button{font-family:inherit;color:inherit;border:none;background:none;cursor:pointer}
 #app{position:fixed;inset:0;max-width:520px;margin:0 auto;overflow:hidden;background:#0f1d16}
@@ -201,7 +203,7 @@ button{font-family:inherit;color:inherit;border:none;background:none;cursor:poin
 <div id="app">
  <div class="scr on" id="title"><canvas id="tcv"></canvas>
   <div class="logo"><h1>疾風<br><span>ターフ</span></h1><p>読め。賭けろ。叫べ。</p></div>
-  <div class="tmenu"><button class="btn" id="tPlay">競馬場へ行く</button><button class="btn" id="tOnline" style="background:linear-gradient(#7ad0ff,#2a8ae0);color:#03203a;box-shadow:0 5px 0 #0a3a6a,inset 0 1px 0 rgba(255,255,255,.5)">みんなで対戦</button><button class="btn sub" id="tHelp">あそびかた</button><div class="rec" id="tRec"></div><div class="rec" style="opacity:.6;font-size:10px">ver 1.5</div></div>
+  <div class="tmenu"><button class="btn" id="tPlay">競馬場へ行く</button><button class="btn" id="tOnline" style="background:linear-gradient(#7ad0ff,#2a8ae0);color:#03203a;box-shadow:0 5px 0 #0a3a6a,inset 0 1px 0 rgba(255,255,255,.5)">みんなで対戦</button><button class="btn sub" id="tHelp">あそびかた</button><div class="rec" id="tRec"></div><div class="rec" style="opacity:.6;font-size:10px">ver 1.6</div></div>
  </div>
  <div class="scr" id="card">
   <div class="hdr"><div class="r1"><span class="grade" id="cGrade"></span><span class="rname" id="cName"></span><span class="money" id="cMoney"></span></div>
@@ -278,6 +280,11 @@ if(typeof module!=='undefined')module.exports={simRace,mkRng,gN,P};
 (function(){
 'use strict';
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)],rnd=Math.random,clamp=(v,a,b)=>Math.max(a,Math.min(b,v)),lerp=(a,b,t)=>a+(b-a)*t;
+// ダブルタップ・ピンチでの拡大を防ぐ(iPhoneは user-scalable=no を無視するため)
+document.addEventListener('gesturestart',e=>e.preventDefault(),{passive:false});
+document.addEventListener('dblclick',e=>e.preventDefault(),{passive:false});
+{let lastT=0;document.addEventListener('touchend',e=>{const now=Date.now();if(now-lastT<350&&!/INPUT|TEXTAREA/.test(e.target.tagName)){e.preventDefault();const b=e.target.closest&&e.target.closest('button,.row,.card');if(b&&b.id!=='cheer')b.click()}lastT=now},{passive:false})}
+document.addEventListener('touchmove',e=>{if(e.touches&&e.touches.length>1)e.preventDefault()},{passive:false});
 window.addEventListener('error',e=>{const el=$('#err');el.style.display='block';el.textContent='エラー: '+(e.message||e)});
 const LS={get(k,d){try{const v=localStorage.getItem('turf_'+k);return v==null?d:JSON.parse(v)}catch(e){return d}},set(k,v){try{localStorage.setItem('turf_'+k,JSON.stringify(v))}catch(e){}}};
 const gauss=()=>gN(rnd);
