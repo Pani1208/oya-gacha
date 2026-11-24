@@ -183,6 +183,22 @@ button{font-family:inherit;color:inherit;border:none;background:none;cursor:poin
 #gold.on{display:flex;animation:fadein .3s}
 #gold b{font-family:'Dela Gothic One';font-size:60px;line-height:1;background:linear-gradient(#fffbe0,#ffc21a 60%,#b86a00);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 4px 0 #4a2a00) drop-shadow(0 0 30px rgba(255,220,100,.9));animation:stamp .7s both}
 #gold small{font-family:'Dela Gothic One';font-size:20px;color:#fff;margin-top:10px;animation:pop .6s .4s both;text-shadow:0 2px 6px #000}
+#loan{position:absolute;inset:0;z-index:40;display:none;flex-direction:column;align-items:center;justify-content:center;background:radial-gradient(ellipse at 50% 30%,#2a1a24,#050306 75%);overflow:hidden}
+#loan.on{display:flex;animation:fadein .5s}
+#loan canvas.rain{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+#loan .man{position:relative;width:220px;height:200px}
+#loan .say{position:relative;max-width:86%;background:#f6f0e0;color:#1a1010;font-weight:900;font-size:15px;line-height:1.6;padding:10px 14px;border-radius:14px;margin-top:6px;min-height:52px;box-shadow:0 8px 24px rgba(0,0,0,.6)}
+#loan .say:before{content:'';position:absolute;left:50%;top:-10px;border:10px solid transparent;border-top:0;border-bottom-color:#f6f0e0;transform:translateX(-50%)}
+#loan .paper{position:relative;width:80%;margin-top:14px;background:linear-gradient(#fffaf0,#efe4cc);color:#2a1a10;border-radius:6px;padding:12px 14px;font-size:12px;font-weight:700;line-height:1.7;box-shadow:0 10px 30px rgba(0,0,0,.6);transform:rotate(-2deg);opacity:0}
+#loan .paper.on{animation:paperIn .5s cubic-bezier(.2,1.3,.4,1) forwards}
+@keyframes paperIn{from{opacity:0;transform:translateY(60px) rotate(8deg)}to{opacity:1;transform:rotate(-2deg)}}
+#loan .paper h4{font-family:'Dela Gothic One';font-size:18px;text-align:center;letter-spacing:.3em;border-bottom:1px solid #a08a60;margin-bottom:4px}
+#loan .paper .amt{font-family:'Dela Gothic One';font-size:22px;color:#8a1010}
+#loan .stampL{position:absolute;right:12px;bottom:10px;width:64px;height:64px;border:3px solid #d0201a;border-radius:50%;color:#d0201a;font-family:'Dela Gothic One';font-size:15px;display:flex;align-items:center;justify-content:center;transform:rotate(-16deg);opacity:0}
+#loan .stampL.on{animation:stamp .4s forwards}
+#loan .btns{display:flex;gap:8px;width:84%;margin-top:16px;opacity:0;transition:opacity .4s}
+#loan .btns.on{opacity:1}
+.debt{color:#ff7a6a!important}
 /* 結果 */
 #result{background:linear-gradient(rgba(6,16,10,.78),rgba(6,14,9,.96) 45%),url(img/g1b.webp) center top/auto 46% no-repeat,#08130c;overflow-y:auto;align-items:center;padding:4vh 12px 20px}
 .board{width:100%;background:#0a120d;border-radius:14px;padding:10px;box-shadow:inset 0 0 0 2px #2c4a36,0 8px 24px rgba(0,0,0,.6)}
@@ -217,7 +233,7 @@ button{font-family:inherit;color:inherit;border:none;background:none;cursor:poin
 <div id="app">
  <div class="scr on" id="title"><canvas id="tcv"></canvas>
   <div class="logo"><h1>疾風<br><span>ターフ</span></h1><p>読め。賭けろ。叫べ。</p></div>
-  <div class="tmenu"><button class="btn" id="tPlay">競馬場へ行く</button><button class="btn" id="tOnline" style="background:linear-gradient(#7ad0ff,#2a8ae0);color:#03203a;box-shadow:0 5px 0 #0a3a6a,inset 0 1px 0 rgba(255,255,255,.5)">みんなで対戦</button><button class="btn sub" id="tHelp">あそびかた</button><div class="rec" id="tRec"></div><div class="rec" style="opacity:.6;font-size:10px">ver 1.7</div></div>
+  <div class="tmenu"><button class="btn" id="tPlay">競馬場へ行く</button><button class="btn" id="tOnline" style="background:linear-gradient(#7ad0ff,#2a8ae0);color:#03203a;box-shadow:0 5px 0 #0a3a6a,inset 0 1px 0 rgba(255,255,255,.5)">みんなで対戦</button><button class="btn sub" id="tHelp">あそびかた</button><div class="rec" id="tRec"></div><div class="rec" style="opacity:.6;font-size:10px">ver 1.8</div></div>
  </div>
  <div class="scr" id="card">
   <div class="hdr"><div class="r1"><span class="grade" id="cGrade"></span><span class="rname" id="cName"></span><span class="money" id="cMoney"></span></div>
@@ -246,6 +262,7 @@ button{font-family:inherit;color:inherit;border:none;background:none;cursor:poin
  <canvas id="fxc"></canvas>
  <div id="betcut"><canvas width="700" height="420"></canvas><b></b><small></small></div><div id="gold"><b>万馬券!!</b><small></small></div>
  <div id="toast"></div>
+ <div id="loan"><canvas class="rain"></canvas><canvas class="man" width="440" height="400"></canvas><div class="say" id="lSay"></div><div class="paper" id="lPaper"></div><div class="btns" id="lBtns"></div></div>
 </div>
 <div id="err"></div>
 <script>
@@ -320,9 +337,9 @@ const G1=['グランドターフ','天翔記念','ゴールデンゲート賞'];
 const IMG={};['day1','day2','g1a','g1b','g1c','paddock','title'].forEach(k=>{const i=new Image();i.decoding='async';i.src='img/'+k+'.webp';IMG[k]=i});
 const ok=k=>IMG[k]&&IMG[k].complete&&IMG[k].naturalWidth>0;
 /* ================= 状態 ================= */
-let S={money:LS.get('money',10000),no:LS.get('no',1),best:LS.get('best',10000),hits:LS.get('hits',0),maxPay:LS.get('maxPay',0)};
+let S={debt:LS.get('debt',0),loans:LS.get('loans',0),money:LS.get('money',10000),no:LS.get('no',1),best:LS.get('best',10000),hits:LS.get('hits',0),maxPay:LS.get('maxPay',0)};
 let R=null,betType='win',sel=[],amt=100,tickets=[];
-function save(){if(ON.on)return;LS.set('money',S.money);LS.set('no',S.no);LS.set('best',S.best);LS.set('hits',S.hits);LS.set('maxPay',S.maxPay)}
+function save(){if(ON.on)return;LS.set('money',S.money);LS.set('debt',S.debt);LS.set('loans',S.loans);LS.set('no',S.no);LS.set('best',S.best);LS.set('hits',S.hits);LS.set('maxPay',S.maxPay)}
 
 function makeRace(forceG1){const no=S.no;const isG1=forceG1!=null?forceG1:no%6===0;const base=isG1?{n:G1[Math.floor(no/6-1)%G1.length],g:'G1'}:RACES[(no-1)%RACES.length];
   const n=isG1?10:8;const D=[1200,1600,2000,2400,1800,1400][Math.floor(rnd()*6)]+(isG1?400:0);const going=rnd()<.62?0:rnd()<.6?1:2;
@@ -357,7 +374,7 @@ function showCard(){scr('card');sel=[];tickets=[];amt=Math.min(100,S.money)||100
   $('#cName').textContent=R.name;updMoney();
   $('#cInfo').innerHTML=`<span>第${R.no}レース</span><span>芝 ${R.D}m</span><span>馬場:${GOING[R.going]}</span><span>${R.n}頭</span>`;
   renderList();renderBet();Sound.ambience('paddock');ON.cardUI();if(R.isG1)setTimeout(()=>toast('🏆 今日のメインはG1!'),400)}
-function updMoney(){$('#cMoney').textContent='💰'+fmt(S.money - tickets.reduce((a,t)=>a+t.amt,0))}
+function updMoney(){$('#cMoney').innerHTML='💰'+fmt(S.money - tickets.reduce((a,t)=>a+t.amt,0))+(S.debt?` <span class="debt" id="debtChip" style="font-size:11px;cursor:pointer">借金${fmt(S.debt)}</span>`:'');const d=$('#debtChip');if(d)d.onclick=e=>{e.stopPropagation();repay()}}
 function renderList(){const L=$('#list');L.innerHTML=`<div class="th"><span>馬番</span><span>馬名 / 脚質・距離・馬場</span><span style="text-align:center">前走</span><span style="text-align:center">印</span><span style="text-align:right">単勝</span></div>`;
   R.hs.forEach(h=>{const d=document.createElement('div');d.className='row'+(sel[0]===h.i?' sel':'')+(sel[1]===h.i?' sel2':'');
     const dist=h.pref<=1400?'短距離':h.pref<=1800?'マイル':h.pref<=2200?'中距離':'長距離';const mud=h.mud>0?'道悪◎':h.mud<0?'道悪×':'';
@@ -384,6 +401,33 @@ $('#bBuy').onclick=()=>{audio();const left=S.money-tickets.reduce((a,t)=>a+t.amt
 $('#bGo').onclick=()=>{audio();Speech.unlock();if(ON.on){ON.toggleReady();return}startRace()};
 $('#bPad').onclick=()=>{audio();paddock()};
 
+/* ================= 借入 ================= */
+let loanA=null;
+function loanEvent(done){const el=$('#loan');const n=S.loans;const amt=10000,back=Math.round(amt*(1.2+Math.min(n,5)*.1)/100)*100;
+  const lines=n===0?['まいど。','お金、なくなっちゃったんやって?','ウチが貸したるわ。利子はちょっとだけな。']:n<3?['また来たんか。','…まぁええわ。','次こそ当ててや。利子は上げとくで。']:['……','もう顔なじみやな。','これで最後にしときや。'];
+  el.classList.add('on');Sound.loanStart();if(window.speechSynthesis)speechSynthesis.cancel();
+  $('#lPaper').className='paper';$('#lBtns').className='btns';$('#lPaper').innerHTML='';$('#lBtns').innerHTML='';
+  const rc=el.querySelector('.rain'),r2=rc.getContext('2d'),mc=el.querySelector('.man').getContext('2d');const t0=performance.now();const drops=Array.from({length:90},()=>({x:Math.random(),y:Math.random(),v:.6+Math.random()*.6}));
+  cancelAnimationFrame(loanA);const anim=now=>{const t=(now-t0)/1000;const W=rc.clientWidth,H=rc.clientHeight;if(rc.width!==W){rc.width=W;rc.height=H}r2.clearRect(0,0,W,H);r2.strokeStyle='rgba(170,180,220,.35)';r2.lineWidth=1;for(const d of drops){d.y+=d.v*.02;if(d.y>1){d.y=-.05;d.x=Math.random()}r2.beginPath();r2.moveTo(d.x*W,d.y*H);r2.lineTo(d.x*W-3,d.y*H+14);r2.stroke()}
+    if(Math.random()<.004){r2.fillStyle='rgba(255,255,255,.5)';r2.fillRect(0,0,W,H);Sound.thunder()}
+    drawMan(mc,t);if(el.classList.contains('on'))loanA=requestAnimationFrame(anim)};loanA=requestAnimationFrame(anim);
+  let i=0;const sayEl=$('#lSay');const next=()=>{if(i>=lines.length){showPaper();return}typeText(sayEl,lines[i++],()=>setTimeout(next,650))};setTimeout(next,600);
+  function showPaper(){const p=$('#lPaper');p.innerHTML=`<h4>借用書</h4>借りるお金 <span class="amt">${fmt(amt)}円</span><br>返すお金 <b>${fmt(back)}円</b>(利子こみ)<br><span style="font-size:10px;color:#7a6a4a">※ゲームの中だけのお金です。所持金がふえたら出馬表の「借金」から返せます</span><div class="stampL">ウマ<br>金融</div>`;p.classList.add('on');Sound.paper();
+    setTimeout(()=>{const b=$('#lBtns');b.innerHTML=`<button class="btn red" style="flex:1" id="lOk">ハンコを押す</button>`;b.classList.add('on');$('#lOk').onclick=()=>{audio();p.querySelector('.stampL').classList.add('on');Sound.hanko();$('#lOk').disabled=true;
+      setTimeout(()=>{S.money+=amt;S.debt+=back;S.loans++;save();coinRain();typeText(sayEl,n===0?'ほな、がんばってな。':'…期待しとるで。',()=>{});setTimeout(()=>{el.classList.remove('on');cancelAnimationFrame(loanA);toast(`💰 ${fmt(amt)}円 借りた(借金 ${fmt(S.debt)}円)`);done&&done()},1900)},500)}},700)}}
+function typeText(el,s,cb){el.textContent='';let k=0;const iv=setInterval(()=>{el.textContent=s.slice(0,++k);if(k%2)Sound.blip();if(k>=s.length){clearInterval(iv);cb&&cb()}},55)}
+function drawMan(c,t){c.setTransform(1,0,0,1,0,0);c.clearRect(0,0,440,400);c.save();c.translate(220,390);const br=Math.sin(t*1.6)*3;
+  c.fillStyle='#14101a';c.beginPath();c.moveTo(-150,0);c.quadraticCurveTo(-140,-150,0,-160+br);c.quadraticCurveTo(140,-150,150,0);c.fill();
+  c.fillStyle='#e8e0d0';c.beginPath();c.moveTo(-26,-150+br);c.lineTo(0,-90+br);c.lineTo(26,-150+br);c.fill();c.fillStyle='#8a1020';c.beginPath();c.moveTo(-8,-140+br);c.lineTo(0,-80+br);c.lineTo(8,-140+br);c.fill();
+  c.fillStyle='#c8a080';c.beginPath();c.ellipse(0,-220+br,62,72,0,0,7);c.fill();
+  c.fillStyle='#0c0a10';c.beginPath();c.ellipse(0,-262+br,92,18,0,0,7);c.fill();c.beginPath();c.moveTo(-58,-264+br);c.quadraticCurveTo(-56,-330+br,0,-332+br);c.quadraticCurveTo(56,-330+br,58,-264+br);c.fill();c.fillStyle='#5a1020';c.fillRect(-58,-282+br,116,12);
+  c.fillStyle='#08080a';c.beginPath();if(c.roundRect){c.roundRect(-50,-238+br,44,24,8);c.roundRect(6,-238+br,44,24,8)}else{c.rect(-50,-238+br,44,24);c.rect(6,-238+br,44,24)}c.fill();c.fillRect(-8,-232+br,16,4);
+  c.fillStyle='rgba(255,255,255,.5)';c.fillRect(-44,-234+br,10,3);c.fillRect(12,-234+br,10,3);
+  c.strokeStyle='#6a4030';c.lineWidth=4;c.beginPath();c.moveTo(-22,-180+br);c.quadraticCurveTo(0,-172+br+Math.sin(t*3)*2,22,-182+br);c.stroke();
+  if(Math.sin(t*2.3)>.92){c.fillStyle='#ffe08a';c.fillRect(6,-182+br,8,6);c.fillStyle='#fff';c.beginPath();c.arc(16,-186+br,3,0,7);c.fill()}
+  c.restore()}
+function coinRain(){Sound.coins();const n=60;for(let i=0;i<n;i++)conf.push({x:RW*(.2+Math.random()*.6),y:-20-Math.random()*RH*.4,vx:(Math.random()-.5)*40,vy:160+Math.random()*120,r:0,vr:(Math.random()-.5)*6,s:8,c:['#ffd54a','#ffb000','#fff2a8'][i%3],life:0})}
+function repay(){if(!S.debt)return;const left=S.money-tickets.reduce((a,t)=>a+t.amt,0);if(left<S.debt){toast(`返すには ${fmt(S.debt)}円 必要です`);Sound.no();return}S.money-=S.debt;toast(`借金 ${fmt(S.debt)}円 を返した!スッキリ`);S.debt=0;save();Sound.ding();updMoney();if(ON.on)ON.setMeta({money:S.money,debt:0})}
 /* ================= 馬券購入カット ================= */
 let bcA=null;
 function betCut(hs){const h=hs[0],el=$('#betcut');el.querySelector('b').textContent=(hs.length>1?hs.map(x=>x.num).join('-')+' ':h.num+'番 '+h.nm)+(hs.length>1?'に賭けた!':' に賭けた!');el.querySelector('small').textContent='単勝 '+h.odds.toFixed(1)+'倍 ・ '+h.pop+'番人気';
@@ -708,9 +752,9 @@ function showResult(){const res=RS.sim.res;const top=res.map(r=>r.i);const hs=R.
    <div class="tkr">${tickets.map((t,k)=>`<div class="tk ${t.pay?'hit':'miss'}" style="position:relative">${t.label}<small>${fmt(t.amt)}円${t.pay?` × ${t.o.toFixed(1)}倍 → ${fmt(t.pay)}円`:''}</small>${t.pay?`<span class="hanko" style="animation-delay:${1.2+k*.25}s">的中</span>`:''}</div>`).join('')}</div>
    <div class="sm" style="margin-top:10px">所持金 <b style="font-family:'Dela Gothic One';font-size:18px;color:#ffe08a" id="rMoney">${fmt(S.money-ret)}</b> 円</div>
    <div class="sm" style="opacity:.75;margin-top:4px">🎙 勝った${hs[top[0]].nm}の今日の調子:${['最悪','いまいち','ふつう','好調','絶好調'][hs[top[0]].cond+2]}</div></div>
-   <div style="display:flex;gap:8px;width:100%;margin-top:14px"><button class="btn sub" style="flex:1" id="rTitle">タイトル</button><button class="btn" style="flex:1.6" id="rNext">${S.money<100?'もう一度はじめる':'次のレースへ ▶'}</button></div>`;
+   <div style="display:flex;gap:8px;width:100%;margin-top:14px"><button class="btn sub" style="flex:1" id="rTitle">タイトル</button><button class="btn" style="flex:1.6" id="rNext">${S.money<100?'お金を借りに行く…':'次のレースへ ▶'}</button></div>`;
   if(ON.on){ON.resultUI(ret);return}
-  $('#rTitle').onclick=()=>{Sound.tap();toTitle()};$('#rNext').onclick=()=>{audio();Sound.tap();if(S.money<100){S.money=10000;S.no=1;save();toast('10,000円から再スタート!')}makeRace();showCard()};
+  $('#rTitle').onclick=()=>{Sound.tap();toTitle()};$('#rNext').onclick=()=>{audio();Sound.tap();if(S.money<100){loanEvent(()=>{makeRace();showCard()});return}makeRace();showCard()};
   $$('#result .pay tr').forEach((tr,k)=>tr.style.animationDelay=(.9+k*.18)+'s');setTimeout(()=>{for(let k=0;k<$$('#result .pay tr').length;k++)setTimeout(()=>Sound.tick(),k*180)},900);
   // ハナ差・クビ差で外れたとき
   {const sec=res[1],fst=res[0];let nm2=null;for(const t of tickets){if(t.pay)continue;if(t.type==='win'&&t.sel[0]===sec.i)nm2=sec;}if(nm2&&!ret){const cm=Math.max(3,Math.round((sec.fin-fst.fin)*16.6*100));const d=document.createElement('div');d.id='nearmiss';d.textContent=cm<100?`あと ${cm}cm…!`:`あと ${(cm/240).toFixed(1)}馬身…!`;const mi=$('#result .mine');if(mi&&cm<240)mi.insertBefore(d,mi.firstChild.nextSibling)}}
@@ -768,6 +812,10 @@ const Sound={crowd:null,hoofT:0,
   slot(ms){const n=Math.floor(ms/70);for(let i=0;i<n;i++)tone(900+(i%4)*120,.03,{type:'square',vol:.03,at:i*.07})},
   ding(){[84,88,91,96].forEach((m,i)=>tone(M2F(m),.5,{type:'triangle',vol:.08,at:i*.06}))},
   jackpot(){[72,76,79,84,79,84,88,91,96].forEach((m,i)=>this.brass(m,.22,.05+i*.11,.06));this.brass(96,1.4,1.1,.06);this.brass(84,1.4,1.1,.05);for(let i=0;i<30;i++)tone(2000+rnd()*2000,.06,{type:'triangle',vol:.04,at:rnd()*2.4})},
+  loanStart(){noise(3,{type:'lowpass',f:900,q:.5,vol:.08,att:1});[45,48,52].forEach((m,i)=>tone(M2F(m),2.4,{type:'triangle',vol:.05,at:i*.3,att:.4}))},
+  thunder(){noise(1.6,{type:'lowpass',f:300,to:80,vol:.35,att:.02})},blip(){tone(520+Math.random()*80,.03,{type:'square',vol:.025})},
+  paper(){noise(.25,{f:2500,q:.8,vol:.12})},hanko(){tone(90,.18,{vol:.35,to:50});noise(.12,{type:'lowpass',f:400,vol:.3})},
+  coins(){for(let i=0;i<24;i++)tone(1800+Math.random()*1600,.07,{type:'triangle',vol:.05,at:i*.05})},
   shutter(){noise(.05,{type:'highpass',f:4000,vol:.4});noise(.05,{type:'highpass',f:3000,vol:.3,at:.12})},
   heart(){for(let i=0;i<3;i++){tone(60,.18,{vol:.35,at:i*.75,to:40});tone(55,.16,{vol:.25,at:i*.75+.22,to:38})}},
   cheer(){noise(.5,{f:900+rnd()*400,q:.8,vol:.09,att:.04});tone(300+rnd()*100,.25,{type:'sawtooth',vol:.03,lp:900,to:420})},
@@ -794,7 +842,7 @@ $('#app').addEventListener('pointerdown',()=>audio(),{once:true});
 function scr(id){$$('.scr').forEach(s=>s.classList.toggle('on',s.id===id));cur=id}
 let cur='title';
 function toTitle(){if(ON.on)ON.leave();if(window.speechSynthesis)speechSynthesis.cancel();RS=null;scr('title');const b=S.best;$('#tRec').innerHTML=`所持金 ${fmt(S.money)}円 ・ 第${S.no}レース<br>最高 ${fmt(b)}円 ・ 的中 ${S.hits}回`}
-$('#tPlay').onclick=()=>{audio();Speech.unlock();Sound.tap();if(!R||R.no!==S.no)makeRace();showCard();if(!LS.get('helped',0)){LS.set('helped',1);setTimeout(helpSheet,500)}};
+$('#tPlay').onclick=()=>{audio();Speech.unlock();Sound.tap();if(S.money<100){loanEvent(()=>{makeRace();showCard()});return}if(!R||R.no!==S.no)makeRace();showCard();if(!LS.get('helped',0)){LS.set('helped',1);setTimeout(helpSheet,500)}};
 $('#tHelp').onclick=()=>{audio();Sound.tap();helpSheet()};
 function helpSheet(){$('#sin').innerHTML=`<h2>あそびかた</h2><div class="help"><b>1. 出馬表を読む</b><br>脚質・得意な距離・馬場・前走の着順・新聞の印・オッズ(人気)を見て、勝ちそうな馬を考えます。<br><br><b>2. パドックで調子を見る</b><br>オッズは「世間の見立て」で、<b>今日の調子は入っていません</b>。パドックで汗びっしょり・首をふる馬は不調、毛ヅヤが光る・キラキラしている馬は好調。人気薄の好調馬を見つけたら大チャンス。<br><br><b>3. 馬券を買う</b><br>単勝=1着を当てる/複勝=3着以内に入る(当たりやすいが配当は低い)/馬連=1着と2着の2頭(順番は自由)。<br><br><b>4. レースを見守る</b><br>あなたの馬には▼が付きます。直線で「いけーっ!」ボタンを連打すると観客が沸きます(結果は変わりません)。<br><br>お金はゲームの中だけのものです。0円になったら10,000円から再スタート。<br><br>🔊 実況は端末の読み上げ音声を使います。</div><div style="display:flex;gap:6px;margin-top:12px"><button class="btn sub" style="flex:1" id="vTog">実況の声:${Speech.on?'ON':'OFF'}</button><button class="btn sub" style="flex:1" id="mTog">音:${muted?'OFF':'ON'}</button></div><button class="btn" style="width:100%;margin-top:8px" id="shClose">わかった</button>`;
   $('#sheet').classList.add('on');$('#shClose').onclick=closeSheet;$('#vTog').onclick=()=>{Speech.on=!Speech.on;LS.set('voice',Speech.on);$('#vTog').textContent='実況の声:'+(Speech.on?'ON':'OFF');if(Speech.on){Speech.unlock();Speech.say('実況、オンです',2)}};
@@ -823,13 +871,13 @@ const ON={net:'',hb:null,on:false,tp:null,cid:'c'+Math.random().toString(36).sli
   me(){return this.mem[this.cid]||this.meta},
   list(){return Object.values(this.mem).sort((a,b)=>a.at-b.at||(a.cid<b.cid?-1:1))},
   col(cid){const L=this.list();const i=L.findIndex(m=>m.cid===cid);return PCOL[(i<0?0:i)%PCOL.length]},
-  async connect(code,name,host){this.leave(true);this.net='通信の準備中…';this.code=code;this.host=host;this.mem={};this.hostSeen=false;this.on=true;this.saved={money:S.money,no:S.no};S.money=10000;
+  async connect(code,name,host){this.leave(true);this.net='通信の準備中…';this.code=code;this.host=host;this.mem={};this.hostSeen=false;this.on=true;this.saved={money:S.money,no:S.no,debt:S.debt,loans:S.loans};S.money=10000;S.debt=0;S.loans=0;
     this.meta={cid:this.cid,name,host,at:Date.now(),money:10000,ready:false,tix:[],st:'lobby'};
     const onMsg=m=>{try{this.onMsg(m)}catch(e){showErr(e)}},onPres=m=>{try{this.onPres(m)}catch(e){showErr(e)}};
     try{if(urlQ.get('net')==='local')this.tp=await localTransport(code,onMsg,onPres,this.meta);else{await loadSupa();this.net='部屋に接続中…';this.tp=await supaTransport(code,onMsg,onPres,this.meta)}this.net='接続OK';}
     catch(e){this.leave(true);throw new Error((e.message||e)+'\nclaude.aiの画面ではオンライン対戦ができません。GitHub Pages版のURLから開いてください')}
     if(!host){this.send({t:'hello'});let n=0;clearInterval(this.hb);this.hb=setInterval(()=>{if(!this.on||this.hostSeen){clearInterval(this.hb);return}n++;this.send({t:'hello'});if(n>=2&&!Object.values(this.mem).some(x=>x.host)){const f=this.list()[0];if(f&&f.cid===this.cid){this.becomeHost();return}}},1500)}else{clearInterval(this.hb);this.hb=setInterval(()=>{if(!this.on){clearInterval(this.hb);return}if(this.phase==='lobby')this.send({t:'cfg',total:this.total,host:1})},3000)}},
-  leave(silent){if(this.tp){try{this.tp.close()}catch(e){}}this.tp=null;clearInterval(this.timer);clearInterval(this.hb);if(this.on&&this.saved){S.money=this.saved.money;S.no=this.saved.no}this.on=false;this.saved=null;this.others={};this.mem={};this.phase='lobby'},
+  leave(silent){if(this.tp){try{this.tp.close()}catch(e){}}this.tp=null;clearInterval(this.timer);clearInterval(this.hb);if(this.on&&this.saved){S.money=this.saved.money;S.no=this.saved.no;S.debt=this.saved.debt;S.loans=this.saved.loans}this.on=false;this.saved=null;this.others={};this.mem={};this.phase='lobby'},
   send(m){m.from=this.cid;try{this.tp&&this.tp.send(m)}catch(e){}},
   setMeta(x){if(!this.tp)return;this.meta=Object.assign({},this.meta,x);try{this.tp.track(this.meta)}catch(e){}if(this.mem[this.cid])this.mem[this.cid]=this.meta},
   onMsg(m){if(!m||m.from===this.cid)return;if(m.t==='cfg'||m.t==='race'){if(!this.hostSeen){this.hostSeen=true;this.net='接続OK'}}
@@ -856,7 +904,7 @@ const ON={net:'',hb:null,on:false,tp:null,cid:'c'+Math.random().toString(36).sli
   // ---- レースの配布(ホスト) ----
   nextRace(){if(!this.host)return;this.round++;S.no=this.round;makeRace(this.round===this.total);R.round=this.round;
     this.send({t:'race',R,round:this.round,total:this.total,left:BET_SEC});this.gotRace({R,round:this.round,total:this.total,left:BET_SEC},true)},
-  gotRace(m,self){R=m.R;this.round=m.round;this.total=m.total;S.no=m.round;this.phase='card';this.goSent=false;this.ready=false;this.deadline=Date.now()+m.left*1000;
+  gotRace(m,self){if(S.money<100&&!this.loaning){this.loaning=true;loanEvent(()=>{this.loaning=false;this.setMeta({money:S.money,debt:S.debt});if(cur==='card')showCard()})}R=m.R;this.round=m.round;this.total=m.total;S.no=m.round;this.phase='card';this.goSent=false;this.ready=false;this.deadline=Date.now()+m.left*1000;
     this.setMeta({ready:false,tix:[],st:'card'});closeSheet();showCard();
     clearInterval(this.timer);this.timer=setInterval(()=>{if(cur!=='card'){clearInterval(this.timer);return}this.barUI();if(this.host&&Date.now()>this.deadline)this.go()},500)},
   cardUI(){if(!this.on){$('#onbar').style.display='none';$('#bGo').textContent='出走 ▶';return}$('#onbar').style.display='flex';$('#cInfo').insertAdjacentHTML('afterbegin',`<span style="background:#ffd54a;color:#3a2400">${this.round}/${this.total}レース</span>`);this.barUI();this.readyBtn()},
@@ -873,13 +921,13 @@ const ON={net:'',hb:null,on:false,tp:null,cid:'c'+Math.random().toString(36).sli
     const o={};for(const m of this.list()){if(m.cid===this.cid)continue;const seen=new Set();for(const t of (m.tix||[]))for(const i of t.sel){if(seen.has(i))continue;seen.add(i);(o[i]=o[i]||[]).push({name:String(m.name).slice(0,6),col:this.col(m.cid)})}}this.others=o},
   cheer(txt){if(this.on)this.send({t:'cheer',txt,name:String(this.meta.name).slice(0,6)})},
   // ---- 結果 ----
-  resultUI(ret){this.phase='result';{const r=$('#rNext');if(r)r.parentElement.remove()}this.setMeta({money:S.money,ready:false,st:'result',last:ret});
+  resultUI(ret){this.phase='result';this.meta.debt=S.debt;{const r=$('#rNext');if(r)r.parentElement.remove()}this.setMeta({money:S.money,ready:false,st:'result',last:ret});
     const el=$('#result');el.insertAdjacentHTML('beforeend',`<div class="board" style="margin-top:12px"><h3><span>部屋の順位</span><span style="font-size:12px;color:#bfe0c9">${this.round}/${this.total}レース</span></h3><div id="roomBoard"></div></div>
      <div style="display:flex;gap:8px;width:100%;margin-top:14px"><button class="btn sub" style="flex:1" id="oLeave">部屋を出る</button><button class="btn" style="flex:1.6" id="oNext"></button></div>`);
     $('#oLeave').onclick=()=>{Sound.tap();this.leave();toTitle()};this.boardUI();
     if(this.round>=this.total)setTimeout(()=>this.finalUI(),4200)},
-  rank(){return this.list().slice().sort((a,b)=>(b.money||0)-(a.money||0))},
-  boardUI(){const b=$('#roomBoard');if(!b)return;b.innerHTML=this.rank().map((m,k)=>`<div class="mb" style="margin-bottom:5px"><span style="font-family:'Dela Gothic One';color:#ffe08a;width:18px">${k+1}</span><span class="dot" style="background:${this.col(m.cid)}"></span>${esc(m.name)}${m.cid===this.cid?' (あなた)':''}${m.st==='result'&&m.last?`<span style="font-size:11px;color:#7aff9a">+${fmt(m.last)}</span>`:''}<span class="mo">${fmt(m.money||0)}円</span></div>`).join('');
+  rank(){return this.list().slice().sort((a,b)=>((b.money||0)-(b.debt||0))-((a.money||0)-(a.debt||0)))},
+  boardUI(){const b=$('#roomBoard');if(!b)return;b.innerHTML=this.rank().map((m,k)=>`<div class="mb" style="margin-bottom:5px"><span style="font-family:'Dela Gothic One';color:#ffe08a;width:18px">${k+1}</span><span class="dot" style="background:${this.col(m.cid)}"></span>${esc(m.name)}${m.cid===this.cid?' (あなた)':''}${m.st==='result'&&m.last?`<span style="font-size:11px;color:#7aff9a">+${fmt(m.last)}</span>`:''}<span class="mo" style="text-align:right">${fmt((m.money||0)-(m.debt||0))}円${m.debt?`<br><small style="color:#ff7a6a;font-size:10px;font-family:'Zen Maru Gothic'">借金${fmt(m.debt)}込み</small>`:''}</span></div>`).join('');
     const nb=$('#oNext');if(!nb)return;const fin=this.round>=this.total;
     if(fin){nb.textContent='最終結果へ';nb.disabled=false;nb.onclick=()=>this.finalUI()}
     else if(this.host){const wait=this.list().filter(m=>m.st==='race').length;nb.textContent=wait?`みんなを待つ…(${wait})`:'次のレースへ ▶';nb.disabled=false;nb.onclick=()=>{audio();Sound.tap();this.nextRace()}}
@@ -887,7 +935,7 @@ const ON={net:'',hb:null,on:false,tp:null,cid:'c'+Math.random().toString(36).sli
   finalUI(){if(cur==='lobby'||this.phase==='final')return;this.phase='final';const rk=this.rank();const meWin=rk[0]&&rk[0].cid===this.cid;
     scr('result');const el=$('#result');el.innerHTML=`<div style="font-family:'Dela Gothic One';font-size:16px;color:#bfe0c9;letter-spacing:.2em;margin-top:2vh">最終結果</div>
      <div style="font-family:'Dela Gothic One';font-size:40px;color:#ffe08a;text-shadow:0 0 24px rgba(255,210,80,.7);margin:6px 0 2px">👑 ${esc(rk[0]?rk[0].name:'')}</div><div style="font-size:13px;color:#fff;margin-bottom:12px">${meWin?'あなたの優勝です!':'の優勝!'}</div>
-     <div class="board">${rk.map((m,k)=>`<div class="mb" style="margin-bottom:6px;${k===0?'box-shadow:0 0 0 2px #ffd54a':''}"><span style="font-family:'Dela Gothic One';color:#ffe08a;width:22px;font-size:18px">${k+1}</span><span class="dot" style="background:${this.col(m.cid)}"></span>${esc(m.name)}${m.cid===this.cid?' (あなた)':''}<span class="mo">${fmt(m.money||0)}円</span></div>`).join('')}</div>
+     <div class="board">${rk.map((m,k)=>`<div class="mb" style="margin-bottom:6px;${k===0?'box-shadow:0 0 0 2px #ffd54a':''}"><span style="font-family:'Dela Gothic One';color:#ffe08a;width:22px;font-size:18px">${k+1}</span><span class="dot" style="background:${this.col(m.cid)}"></span>${esc(m.name)}${m.cid===this.cid?' (あなた)':''}<span class="mo" style="text-align:right">${fmt((m.money||0)-(m.debt||0))}円${m.debt?`<br><small style="color:#ff7a6a;font-size:10px;font-family:'Zen Maru Gothic'">借金${fmt(m.debt)}込み</small>`:''}</span></div>`).join('')}</div>
      <div style="display:flex;gap:8px;width:100%;margin-top:16px"><button class="btn sub" style="flex:1" id="fLeave">部屋を出る</button>${this.host?'<button class="btn" style="flex:1.4" id="fAgain">もう一度(ロビーへ)</button>':'<button class="btn" style="flex:1.4" disabled>ホストを待っています</button>'}</div>`;
     $('#fLeave').onclick=()=>{Sound.tap();this.leave();toTitle()};const a=$('#fAgain');if(a)a.onclick=()=>{Sound.tap();this.send({t:'lobby'});this.backToLobby()};
     Sound.ambience('result');if(meWin){celebrate(30,true);Sound.fanfare(true)}else{celebrate(3,false);Sound.applause(.6)}}
