@@ -221,7 +221,7 @@ button{font-family:inherit;color:inherit;border:none;background:none;cursor:poin
 .sty{display:flex;gap:4px;align-items:center;font-size:11px;font-weight:900;color:#e8cfa8}
 .sty button{flex:1;padding:5px 0;border-radius:8px;background:rgba(0,0,0,.35);font-weight:900;font-size:11px;color:#e8cfa8}
 .sty button.on{background:#ffd54a;color:#3a2400}
-#stMsg{position:absolute;left:50%;top:40%;transform:translateX(-50%);z-index:3;pointer-events:none;font-family:'Dela Gothic One';font-size:24px;color:#fff;text-shadow:0 3px 0 #000,0 0 16px rgba(255,200,100,.8);white-space:nowrap;opacity:0}
+#stMsg{position:absolute;left:4%;right:4%;top:40%;z-index:3;pointer-events:none;font-family:'Dela Gothic One';font-size:clamp(16px,5.6vw,24px);text-align:center;color:#fff;text-shadow:0 3px 0 #000,0 0 16px rgba(255,200,100,.8);opacity:0}
 #stMsg.on{animation:big 1.6s cubic-bezier(.2,1.4,.4,1) forwards}
 .foals{display:flex;gap:6px;margin:8px 0}
 .foal{flex:1;background:rgba(0,0,0,.3);border-radius:12px;padding:4px;text-align:center;font-size:11px;font-weight:900;box-shadow:inset 0 0 0 2px transparent}
@@ -262,7 +262,7 @@ button{font-family:inherit;color:inherit;border:none;background:none;cursor:poin
 <div id="app">
  <div class="scr on" id="title"><canvas id="tcv"></canvas>
   <div class="logo"><h1>疾風<br><span>ターフ</span></h1><p>読め。賭けろ。叫べ。</p></div>
-  <div class="tmenu"><button class="btn" id="tPlay">競馬場へ行く</button><button class="btn" id="tStable" style="background:linear-gradient(#ffb07a,#e0702a);color:#3a1400;box-shadow:0 5px 0 #7a3008,inset 0 1px 0 rgba(255,255,255,.5)">愛馬の厩舎</button><button class="btn" id="tOnline" style="background:linear-gradient(#7ad0ff,#2a8ae0);color:#03203a;box-shadow:0 5px 0 #0a3a6a,inset 0 1px 0 rgba(255,255,255,.5)">みんなで対戦</button><button class="btn sub" id="tHelp">あそびかた</button><div class="rec" id="tRec"></div><div class="rec" style="opacity:.6;font-size:10px">ver 2.0</div></div>
+  <div class="tmenu"><button class="btn" id="tPlay">競馬場へ行く</button><button class="btn" id="tStable" style="background:linear-gradient(#ffb07a,#e0702a);color:#3a1400;box-shadow:0 5px 0 #7a3008,inset 0 1px 0 rgba(255,255,255,.5)">愛馬の厩舎</button><button class="btn" id="tOnline" style="background:linear-gradient(#7ad0ff,#2a8ae0);color:#03203a;box-shadow:0 5px 0 #0a3a6a,inset 0 1px 0 rgba(255,255,255,.5)">みんなで対戦</button><button class="btn sub" id="tHelp">あそびかた</button><div class="rec" id="tRec"></div><div class="rec" style="opacity:.6;font-size:10px">ver 2.1</div></div>
  </div>
  <div class="scr" id="card">
   <div class="hdr"><div class="r1"><span class="grade" id="cGrade"></span><span class="rname" id="cName"></span><button class="ib" id="cStable" style="font-size:10px;width:auto;padding:0 6px">厩舎</button><span class="money" id="cMoney"></span></div>
@@ -441,7 +441,7 @@ const PERS=[{n:'甘えん坊',d:'なでられるのが大好き'},{n:'やんち�
 const STAGES=['子馬','若駒','成馬'];
 const PET={p:LS.get('pet',null),hall:LS.get('hall',[]),mode:null,anim:null,fx:[],react:0,brushT:0,lastPet:0,
   save(){LS.set('pet',this.p);LS.set('hall',this.hall)},
-  stage(){const t=this.p.trains;return t>=12?2:t>=5?1:0},
+  stage(){if(!this.p)return 0;const t=this.p.trains;return t>=12?2:t>=5?1:0},
   scale(){return[.68,.85,1][this.stage()]},
   decay(){const p=this.p,now=Date.now(),hr=Math.min(72,(now-(p.last||now))/36e5);p.last=now;if(hr<=0)return;
     p.hunger=clamp(p.hunger-hr*(p.pers===2?5:8),0,100);p.gloss=clamp(p.gloss-hr*4,0,100);p.energy=clamp(p.energy+hr*18,0,100);p.mood=clamp(p.mood-hr*(p.hunger<30?8:3),0,100)},
@@ -456,18 +456,18 @@ const PET={p:LS.get('pet',null),hall:LS.get('hall',[]),mode:null,anim:null,fx:[]
     if(p.races.length>=10)p.retire=true;this.save();return{name:p.name,rank,prize}},
   // ---- 画面 ----
   open(){if(!this.p){this.choose();return}this.decay();this.save();scr('stable');rsz();this.mode=null;this.panel();Sound.ambience('paddock');
-    if(this.p.retire){setTimeout(()=>this.retire(),500)}
-    cancelAnimationFrame(this.anim);let last=performance.now();const loop=now=>{const dt=Math.min(.05,(now-last)/1000);last=now;if(cur!=='stable')return;this.draw(now/1000,dt);this.anim=requestAnimationFrame(loop)};this.anim=requestAnimationFrame(loop)},
+    if(this.p.retire){setTimeout(()=>{if(this.p&&this.p.hallDone){this.p=null;this.save();this.choose()}else this.retire()},500)}
+    cancelAnimationFrame(this.anim);let last=performance.now();const loop=now=>{const dt=Math.min(.05,(now-last)/1000);last=now;if(cur!=='stable')return;if(!this.p){if(!$('#sheet').classList.contains('on'))this.choose();this.anim=requestAnimationFrame(loop);return}this.draw(now/1000,dt);this.anim=requestAnimationFrame(loop)};this.anim=requestAnimationFrame(loop)},
   choose(){const cands=[0,1,2].map(k=>({coat:Math.floor(rnd()*COATS.length),pers:k,silk:[SILK[Math.floor(rnd()*SILK.length)],SILK[Math.floor(rnd()*SILK.length)],Math.floor(rnd()*4)]}));let sel=0;
     const nmDef=N1[Math.floor(rnd()*N1.length)]+N2[Math.floor(rnd()*N2.length)];
     $('#sin').innerHTML=`<h2>子馬をむかえる</h2><div class="lead">いっしょに暮らす子馬を1頭えらんで、名前をつけてください。お世話して育てると、レースに出られます。</div><div class="foals">${cands.map((c,k)=>`<div class="foal ${k?'':'on'}" data-k="${k}"><canvas width="200" height="140"></canvas>${COATS[c.coat].n}<br><span style="color:#ffd54a">${PERS[c.pers].n}</span><br><small style="font-weight:700;color:#bfe0c9">${PERS[c.pers].d}</small></div>`).join('')}</div>
       <div class="lbl">名前(9文字まで)</div><input class="inp" id="pName" maxlength="9" value="${nmDef}"><button class="btn" style="width:100%" id="pOk">この子にする</button><button class="btn sub" style="width:100%;margin-top:8px" id="shClose">あとで</button>`;
-    $('#sheet').classList.add('on');$('#shClose').onclick=closeSheet;
+    $('#sheet').classList.add('on');$('#shClose').onclick=()=>{closeSheet();if(!this.p)toTitle()};
     $$('.foal').forEach(el=>{const k=+el.dataset.k,c=cands[k];const cx=el.querySelector('canvas').getContext('2d');drawHorse(cx,96,128,.95,.2,{num:'',coat:COATS[c.coat],silk:c.silk,frame:['#fff','#000']},{walk:1,noJockey:1,bare:1,t:0});el.onclick=()=>{sel=k;Sound.tap();$$('.foal').forEach(x=>x.classList.toggle('on',+x.dataset.k===k))}});
     $('#pOk').onclick=()=>{audio();const c=cands[sel];const nm=($('#pName').value||'').trim().slice(0,9)||nmDef;
       this.p={name:nm,coat:c.coat,silk:c.silk,pers:c.pers,spd:20,sta:20,guts:20,hunger:70,mood:70,energy:100,gloss:50,bond:10,trains:0,races:[],wins:0,prize:0,style:1,last:Date.now(),born:Date.now()};this.save();closeSheet();this.open();setTimeout(()=>{this.msg(nm+' がやってきた!');Sound.whinny()},400)}},
   msg(t){const m=$('#stMsg');m.textContent=t;m.classList.remove('on');void m.offsetWidth;m.classList.add('on')},
-  panel(){const p=this.p,st=this.stage();$('#stName').textContent=p.name;$('#stStage').textContent=STAGES[st]+'・'+PERS[p.pers].n;
+  panel(){if(!this.p)return;const p=this.p,st=this.stage();$('#stName').textContent=p.name;$('#stStage').textContent=STAGES[st]+'・'+PERS[p.pers].n;
     const g=(n,v,c)=>`<div class="gauge">${n} <span style="float:right">${Math.round(v)}</span><div class="bar"><i style="width:${v}%;background:${c}"></i></div></div>`;
     const cd=this.cond();const cdT=['最悪','いまいち','ふつう','好調','絶好調'][cd+2];
     $('#stPanel').innerHTML=`<div class="gg">${g('おなか',p.hunger,'#ff9a4a')}${g('きげん',p.mood,'#ff6aa8')}${g('体力',p.energy,'#4ad06a')}${g('毛ヅヤ',p.gloss,'#7ad0ff')}</div>
@@ -496,10 +496,10 @@ const PET={p:LS.get('pet',null),hall:LS.get('hall',[]),mode:null,anim:null,fx:[]
   rest(){const p=this.p;this.sleep=2.4;p.energy=clamp(p.energy+40,0,100);p.hunger=clamp(p.hunger-6,0,100);p.mood=clamp(p.mood+4,0,100);this.save();Sound.lose();setTimeout(()=>{this.msg('体力が回復した');this.panel()},2400)},
   pet(){const now=performance.now();if(now-this.lastPet<500)return;this.lastPet=now;const p=this.p;p.bond=clamp(p.bond+(p.pers===0?2:1),0,100);p.mood=clamp(p.mood+(p.pers===0?5:3),0,100);this.save();this.react=1;Sound.whinny();for(let i=0;i<5;i++)this.fx.push({k:'heart',x:(rnd()-.5)*80,y:-110-rnd()*30,t:0,d:rnd()*.4});clearTimeout(this.pT);this.pT=setTimeout(()=>this.panel(),300)},
   brush(x,y){const p=this.p;if(p.gloss>=100){if(!this.fullMsg){this.fullMsg=1;this.msg('ピカピカ!')}return}this.fullMsg=0;p.gloss=clamp(p.gloss+.6,0,100);p.mood=clamp(p.mood+.12,0,100);this.fx.push({k:'spark',x,y,t:0});if((this.brushT-=1)<=0){this.brushT=6;Sound.brush()}clearTimeout(this.bT);this.bT=setTimeout(()=>{this.save();this.panel()},400)},
-  retire(){const p=this.p;this.hall.unshift({name:p.name,coat:p.coat,silk:p.silk,races:p.races.length,wins:p.wins,prize:p.prize,g1:p.g1||0,date:Date.now()});this.hall=this.hall.slice(0,20);
+  retire(){const p=this.p;if(!p||p.hallDone)return;p.hallDone=true;this.hall.unshift({name:p.name,coat:p.coat,silk:p.silk,races:p.races.length,wins:p.wins,prize:p.prize,g1:p.g1||0,date:Date.now()});this.hall=this.hall.slice(0,20);
     $('#sin').innerHTML=`<h2>引退式</h2><canvas width="600" height="300" style="width:100%;height:150px" id="retCv"></canvas><div class="help" style="text-align:center"><b style="font-size:20px">${esc(p.name)}</b><br>${p.races.length}戦${p.wins}勝${p.g1?` ・ G1 ${p.g1}勝`:''} ・ 賞金 ${fmt(p.prize)}円<br>いままで本当にありがとう。殿堂入りしました。</div><button class="btn" style="width:100%;margin-top:10px" id="rOk">新しい子馬をむかえる</button><div style="margin-top:12px;font-size:12px;font-weight:900;color:#ffd54a">殿堂</div>${this.hall.map(x=>`<div class="mb" style="margin-top:5px;font-size:12px">${esc(x.name)}<span class="mo" style="font-size:11px">${x.races}戦${x.wins}勝${x.g1?' G1×'+x.g1:''}</span></div>`).join('')}`;
     $('#sheet').classList.add('on');const c=$('#retCv').getContext('2d');drawHorse(c,300,280,2.2,.2,this.horse(),{walk:1,t:0,gloss:1});Sound.fanfare(true);celebrate(10,false);
-    $('#rOk').onclick=()=>{this.p=null;this.save();closeSheet();this.choose()}},
+    $('#rOk').onclick=()=>{this.p=null;this.save();closeSheet();this.choose()};this.save()},
   // ---- 描画 ----
   draw(t,dt){const cv=$('#scv'),W=cv.clientWidth,H=cv.clientHeight;if(cv.width!==Math.round(W*DPR)){cv.width=W*DPR;cv.height=H*DPR}const c=cv.getContext('2d');c.setTransform(DPR,0,0,DPR,0,0);
     const night=this.sleep>0;
@@ -543,7 +543,7 @@ const PET={p:LS.get('pet',null),hall:LS.get('hall',[]),mode:null,anim:null,fx:[]
     if(this.mode==='brush'){c.strokeStyle='rgba(255,213,74,.8)';c.setLineDash([6,5]);c.lineWidth=2;c.strokeRect(hx-70*sc,hy-100*sc,150*sc,70*sc);c.setLineDash([])}}
 };
 {const cv=$('#scv');let down=false;const pos=e=>{const r=cv.getBoundingClientRect();return[e.clientX-r.left,e.clientY-r.top]};
-  const onHorse=(x,y)=>{const W=cv.clientWidth,H=cv.clientHeight,sc=PET.scale()*Math.min(1.6,W/260)*.95;return x>W*.5-80*sc&&x<W*.5+95*sc&&y>H*.88-130*sc&&y<H*.88};
+  const onHorse=(x,y)=>{if(!PET.p)return false;const W=cv.clientWidth,H=cv.clientHeight,sc=PET.scale()*Math.min(1.6,W/260)*.95;return x>W*.5-80*sc&&x<W*.5+95*sc&&y>H*.88-130*sc&&y<H*.88};
   cv.addEventListener('pointerdown',e=>{if(!PET.p||PET.trainAnim)return;audio();down=true;const [x,y]=pos(e);if(PET.mode==='brush'){if(onHorse(x,y))PET.brush(x,y)}else if(onHorse(x,y))PET.pet()});
   cv.addEventListener('pointermove',e=>{if(!down||PET.mode!=='brush')return;const [x,y]=pos(e);if(onHorse(x,y))PET.brush(x,y)});
   window.addEventListener('pointerup',()=>down=false)}
